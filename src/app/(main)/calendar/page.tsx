@@ -9,13 +9,14 @@ export const metadata: Metadata = {
 
 export default function CalendarPage() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">My Calendar</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="animate-fade-in">
+        <div className="space-y-1 mb-6">
+            <h1 className="text-3xl font-bold tracking-tight font-headline">My Calendar</h1>
+            <p className="text-muted-foreground">
+                Organize your schedule with a modern, interactive calendar.
+            </p>
+        </div>
         <CalendarView tasks={initialTasks} events={calendarEvents} />
-      </CardContent>
-    </Card>
+    </div>
   );
 }
