@@ -6,6 +6,8 @@ import {
   format,
   isSameDay,
   startOfWeek,
+  parseISO,
+  differenceInMinutes,
 } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,40 +16,72 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Circle,
+  Clock,
+  Coffee,
   MoreVertical,
-  XCircle,
+  Plus,
+  ShoppingBasket,
+  Smile,
+  Users,
 } from 'lucide-react';
 import type { Task } from '@/lib/types';
+import { Badge } from '../ui/badge';
 
 type DailyScheduleProps = {
   tasks: Task[];
 };
 
+const taskIcons = {
+  'Go to the Cult Fit Classes': <Smile className="h-5 w-5" />,
+  'Conduct Project Review meeting': <Users className="h-5 w-5" />,
+  'Coffee with Clients at Barista': <Coffee className="h-5 w-5" />,
+  'Take the dog for a walk': <Clock className="h-5 w-5" />,
+  default: <ShoppingBasket className="h-5 w-5" />,
+};
+
+const getTaskIcon = (title: string) => {
+    return taskIcons[title as keyof typeof taskIcons] || taskIcons.default;
+}
+
+const getTaskColor = (title: string) => {
+    switch (title) {
+        case 'Take the dog for a walk':
+            return 'bg-rose-500';
+        case 'Go to the Cult Fit Classes':
+            return 'bg-blue-500';
+        case 'Conduct Project Review meeting':
+            return 'bg-rose-500';
+        case 'Coffee with Clients at Barista':
+            return 'bg-gray-400';
+        default:
+            return 'bg-rose-500';
+    }
+}
+
 export function DailySchedule({ tasks }: DailyScheduleProps) {
-  const today = new Date('2020-03-12T00:00:00');
+  const today = new Date('2024-03-12T00:00:00');
   const week = eachDayOfInterval({
     start: startOfWeek(today),
     end: endOfWeek(today),
   });
 
-  const taskTimeMap = new Map<string, Task[]>();
+  const sortedTasks = tasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
-  tasks.forEach((task) => {
-    const hour = format(new Date(task.dueDate), 'ha').toLowerCase();
-    if (!taskTimeMap.has(hour)) {
-      taskTimeMap.set(hour, []);
+  const getEndTime = (task: Task, index: number) => {
+    if (index < sortedTasks.length - 1) {
+        return parseISO(sortedTasks[index + 1].dueDate);
     }
-    taskTimeMap.get(hour)?.push(task);
-  });
-  
-  const hours = Array.from({ length: 5 }, (_, i) => format(new Date().setHours(7 + i), 'ha').toLowerCase());
+    const taskDate = parseISO(task.dueDate);
+    return new Date(taskDate.getTime() + 60 * 60 * 1000); // Assume 1 hour if it's the last task
+  }
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-headline text-lg">
-            Today's Schedule
+          <CardTitle className="font-headline text-lg flex items-center">
+            September <span className="text-pink-500 ml-2">2021</span>
           </CardTitle>
           <span className="text-sm text-muted-foreground">
             {format(today, 'dd MMMM, yyyy')}
@@ -55,7 +89,7 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" size="icon">
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -74,9 +108,6 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
                   )}
                 >
                   <span className="text-md">{format(day, 'd')}</span>
-                  {isSameDay(day, today) && (
-                    <div className="w-1.5 h-1.5 bg-accent rounded-full mt-0.5"></div>
-                  )}
                 </Button>
               </div>
             ))}
@@ -86,72 +117,53 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
           </Button>
         </div>
 
-        <div className="space-y-4">
-          <CardTitle className="text-md font-sans font-bold pt-4">Task</CardTitle>
-          {hours.map((hour) => {
-            const hourTasks = taskTimeMap.get(hour) || [];
+        <div className="relative">
+          {sortedTasks.map((task, index) => {
+            const startTime = parseISO(task.dueDate);
+            const endTime = getEndTime(task, index);
+            const duration = differenceInMinutes(endTime, startTime);
+
             return (
-              <div key={hour} className="flex items-start gap-4">
-                <div className="w-16 text-right">
+              <div key={task.id} className="flex items-start gap-4 mb-4">
+                {/* Timeline */}
+                <div className="flex flex-col items-center w-16">
                   <span className="text-sm font-semibold text-muted-foreground">
-                    {hour.toUpperCase()}
+                    {format(startTime, 'h:mm a')}
                   </span>
+                   <div className="flex-1 w-px bg-gray-300 my-2"></div>
                 </div>
-                <div className="flex-1 space-y-2">
-                  {hourTasks.length > 0 ? (
-                    hourTasks.map((task, index) => (
-                      <Card
-                        key={task.id}
-                        className={cn(
-                          'p-4',
-                          index % 2 === 0
-                            ? 'bg-blue-100 border-blue-200'
-                            : 'bg-pink-100 border-pink-200'
-                        )}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p
-                              className={cn(
-                                'font-semibold',
-                                index % 2 === 0
-                                  ? 'text-blue-900'
-                                  : 'text-pink-900'
-                              )}
-                            >
-                              {task.title}
-                            </p>
-                            {task.description && (
-                              <p
-                                className={cn(
-                                  'text-sm',
-                                  index % 2 === 0
-                                    ? 'text-blue-700'
-                                    : 'text-pink-700'
-                                )}
-                              >
-                                {task.description}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {task.completed ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-500" />
-                            ) : (
-                              <XCircle className="h-5 w-5 text-red-500" />
-                            )}
-                            <MoreVertical className="h-5 w-5 text-gray-400" />
-                          </div>
+
+                {/* Task details */}
+                <div className="flex-1 relative">
+                    <div className="absolute -left-7 top-0">
+                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white", getTaskColor(task.title))}>
+                            {getTaskIcon(task.title)}
                         </div>
-                      </Card>
-                    ))
-                  ) : (
-                    <div className="h-10"></div>
-                  )}
+                    </div>
+                  <div className="pl-4">
+                    <p className="text-sm text-muted-foreground">
+                        {format(startTime, 'h:mm a')} - {format(endTime, 'h:mm a')} ({duration} min)
+                    </p>
+                    <p className="font-semibold text-lg">{task.title}</p>
+                    <div className="flex items-center justify-between">
+                        <Badge variant="outline">{task.completed ? '3/3' : '2/5'}</Badge>
+                        {task.completed ? (
+                            <CheckCircle2 className="h-5 w-5 text-blue-500" />
+                        ): (
+                            <Circle className="h-5 w-5 text-rose-500" />
+                        )}
+                    </div>
+                  </div>
                 </div>
               </div>
             );
           })}
+
+          <div className="absolute right-0 -bottom-4">
+              <Button className="rounded-full w-12 h-12 bg-rose-500 hover:bg-rose-600 shadow-lg">
+                <Plus className="h-6 w-6" />
+              </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
