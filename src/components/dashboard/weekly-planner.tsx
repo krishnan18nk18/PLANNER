@@ -13,7 +13,32 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Pin } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { BookCopy, MessageSquare, Pin } from 'lucide-react';
+
+const pinnedNotes = [
+  {
+    id: '1',
+    text: 'Weekly Stand up Meeting',
+    icon: MessageSquare,
+    color: 'from-purple-500 to-indigo-500',
+    delay: '0s',
+  },
+  {
+    id: '2',
+    text: 'Weekly All Hands Call',
+    icon: BookCopy,
+    color: 'from-blue-500 to-sky-500',
+    delay: '0.2s',
+  },
+  {
+    id: '3',
+    text: 'Review Q2 performance',
+    icon: Pin,
+    color: 'from-pink-500 to-rose-500',
+    delay: '0.4s',
+  }
+];
 
 export function WeeklyPlanner() {
   return (
@@ -46,20 +71,27 @@ export function WeeklyPlanner() {
               value="pinned"
               className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none text-gray-300"
             >
-              Pinned
+              Pinned Notes
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
-        <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2 text-sm text-gray-200 animate-float" style={{ animationDelay: '0s' }}>
-            <Pin className="h-4 w-4 transform -rotate-45 text-pink-400" />
-            <span>Weekly Stand up Meeting</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-200 animate-float" style={{ animationDelay: '0.2s' }}>
-            <Pin className="h-4 w-4 transform -rotate-45 text-blue-400" />
-            <span>Weekly All Hands Call</span>
-          </div>
+        <div className="mt-6 space-y-4">
+          {pinnedNotes.map((note) => (
+            <div
+              key={note.id}
+              className={cn(
+                'glass-card p-4 flex items-center gap-4 animate-float hover:scale-105 transform transition-all duration-300 rounded-2xl bg-gradient-to-r text-white shadow-lg hover:shadow-xl',
+                note.color
+              )}
+              style={{ animationDelay: note.delay }}
+            >
+              <div className="p-2 bg-white/20 rounded-lg">
+                <note.icon className="h-5 w-5" />
+              </div>
+              <span className="font-medium text-sm">{note.text}</span>
+            </div>
+          ))}
         </div>
 
         <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
