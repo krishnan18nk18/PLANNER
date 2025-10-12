@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -69,7 +70,7 @@ export default function SignupPage() {
       }
       toast({ title: 'Account created successfully!' });
       router.push('/dashboard');
-    } catch (error: any) => {
+    } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Sign-Up Failed',
