@@ -8,12 +8,15 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
 import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function SignupPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { db } = useFirestore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -22,7 +25,19 @@ export default function SignupPage() {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      if (user && db) {
+        // Create user profile
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          createdAt: new Date().toISOString(),
+        });
+      }
       toast({ title: 'Successfully signed up with Google!' });
       router.push('/dashboard');
     } catch (error: any) {
@@ -39,12 +54,22 @@ export default function SignupPage() {
     const auth = getAuth();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      if(userCredential.user) {
-        await updateProfile(userCredential.user, { displayName });
+      const user = userCredential.user;
+      if(user && db) {
+        await updateProfile(user, { displayName });
+        // Create user profile
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: displayName,
+          photoURL: user.photoURL,
+          createdAt: new Date().toISOString(),
+        });
       }
       toast({ title: 'Account created successfully!' });
       router.push('/dashboard');
-    } catch (error: any) {
+    } catch (error: any) => {
       toast({
         variant: 'destructive',
         title: 'Sign-Up Failed',
