@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
 import { getSuggestions } from '@/app/actions';
 import {
   Card,
@@ -15,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2, Lightbulb } from 'lucide-react';
-import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
@@ -34,7 +34,7 @@ function SubmitButton() {
 }
 
 export function SuggestionTool() {
-  const [state, formAction] = useFormState(getSuggestions, initialState);
+  const [state, formAction] = useActionState(getSuggestions, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
