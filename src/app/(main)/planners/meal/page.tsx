@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -82,8 +83,8 @@ export default function MealPlannerPage() {
             {days.map(day => <div key={day} className="font-bold text-center">{day}</div>)}
             
             {meals.map((meal, mealIndex) => (
-              <>
-                <div key={meal} className="font-bold pr-2 text-right self-center">{meal}</div>
+              <React.Fragment key={meal}>
+                <div className="font-bold pr-2 text-right self-center">{meal}</div>
                 {days.map((day, dayIndex) => (
                   <Textarea
                     key={`${day}-${meal}`}
@@ -97,7 +98,7 @@ export default function MealPlannerPage() {
                     placeholder="Meal details..."
                   />
                 ))}
-              </>
+              </React.Fragment>
             ))}
           </div>
         </CardContent>
@@ -167,3 +168,5 @@ export default function MealPlannerPage() {
     </div>
   );
 }
+
+    
