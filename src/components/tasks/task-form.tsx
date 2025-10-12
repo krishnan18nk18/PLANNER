@@ -63,7 +63,7 @@ export function TaskForm({ onSubmit, task }: TaskFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"
@@ -71,7 +71,7 @@ export function TaskForm({ onSubmit, task }: TaskFormProps) {
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Finish project proposal" {...field} />
+                <Input placeholder="e.g. Finish project proposal" {...field} className="dark:bg-white/10 bg-black/5" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -84,7 +84,7 @@ export function TaskForm({ onSubmit, task }: TaskFormProps) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="Add more details..." {...field} />
+                <Textarea placeholder="Add more details..." {...field} className="dark:bg-white/10 bg-black/5" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -103,7 +103,7 @@ export function TaskForm({ onSubmit, task }: TaskFormProps) {
                       <Button
                         variant={'outline'}
                         className={cn(
-                          'w-full pl-3 text-left font-normal',
+                          'w-full pl-3 text-left font-normal dark:bg-white/10 bg-black/5',
                           !field.value && 'text-muted-foreground'
                         )}
                       >
@@ -140,7 +140,7 @@ export function TaskForm({ onSubmit, task }: TaskFormProps) {
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="dark:bg-white/10 bg-black/5">
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                   </FormControl>
@@ -155,7 +155,7 @@ export function TaskForm({ onSubmit, task }: TaskFormProps) {
             )}
           />
         </div>
-        <Button type="submit" className="w-full bg-accent hover:bg-accent/90">
+        <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:scale-105 transition-transform">
           {task ? 'Save Changes' : 'Add Task'}
         </Button>
       </form>
