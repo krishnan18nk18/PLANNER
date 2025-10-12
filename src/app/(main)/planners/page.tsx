@@ -35,7 +35,6 @@ import {
   Feather,
   Heart,
   Plane,
-  Scale,
   Utensils,
   Calendar as CalendarIcon,
   Target,
@@ -43,28 +42,29 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { createPortal } from 'react-dom';
+import { Switch } from '@/components/ui/switch';
 
 const initialPlannerTypes = [
-  { id: '1', title: 'Daily Planner', description: 'Organize your day with a detailed to-do list.', icon: CheckCircle, href: '/tasks', gradient: 'from-blue-400 to-blue-600' },
-  { id: '2', title: 'Weekly Planner', description: 'Get a bird\'s eye view of your week.', icon: CalendarDays, href: '/calendar', gradient: 'from-purple-400 to-purple-600' },
-  { id: '3', title: 'Monthly Planner', description: 'Plan your month and set goals.', icon: CalendarIcon, href: '/calendar', gradient: 'from-pink-400 to-pink-600' },
-  { id: '4', title: 'Annual/Yearly Planner', description: 'Set your vision for the entire year.', icon: Book, href: '/tasks', gradient: 'from-green-400 to-green-600' },
-  { id: '5', title: 'Goal Planner', description: 'Define and track your personal goals.', icon: Target, href: '/tasks', gradient: 'from-yellow-400 to-yellow-600' },
-  { id: '6', title: 'Productivity Planner', description: 'Boost your efficiency and focus.', icon: Briefcase, href: '/tasks', gradient: 'from-indigo-400 to-indigo-600' },
-  { id: '7', title: 'Health and Fitness Planner', description: 'Track workouts, meals, and wellness.', icon: Heart, href: '/tasks', gradient: 'from-red-400 to-red-600' },
-  { id: '8', title: 'Meal/Diet Planner', description: 'Plan your meals and track nutrition.', icon: Utensils, href: '/tasks', gradient: 'from-orange-400 to-orange-600' },
-  { id: '9', title: 'Budget/Financial Planner', description: 'Manage your finances and savings.', icon: PiggyBank, href: '/tasks', gradient: 'from-teal-400 to-teal-600' },
-  { id: '10', title: 'Academic/Study Planner', description: 'Organize studies and assignments.', icon: GraduationCap, href: '/tasks', gradient: 'from-cyan-400 to-cyan-600' },
-  { id: '11', title: 'Work Planner', description: 'Manage your work tasks and projects.', icon: Briefcase, href: '/tasks', gradient: 'from-gray-400 to-gray-600' },
-  { id: '12', title: 'Family Planner', description: 'Coordinate schedules for the family.', icon: Users, href: '/calendar', gradient: 'from-rose-400 to-rose-600' },
-  { id: '13', title: 'Bullet Journal', description: 'A flexible and creative organization.', icon: Feather, href: '/tasks', gradient: 'from-lime-400 to-lime-600' },
-  { id: '14', title: 'Wedding/Event Planner', description: 'Plan every detail of your special day.', icon: Heart, href: '/calendar', gradient: 'from-fuchsia-400 to-fuchsia-600' },
-  { id: '15', title: 'Travel/Trip Planner', description: 'Organize your itinerary and bookings.', icon: Plane, href: '/tasks', gradient: 'from-sky-400 to-sky-600' },
+  { id: '1', title: 'Daily Planner', description: 'Organize your day with a detailed to-do list.', icon: CheckCircle, href: '/tasks', gradient: 'from-blue-400 to-blue-600', hasToggle: false },
+  { id: '2', title: 'Weekly Planner', description: 'Get a bird\'s eye view of your week.', icon: CalendarDays, href: '/calendar', gradient: 'from-purple-400 to-purple-600', hasToggle: false },
+  { id: '3', title: 'Monthly Planner', description: 'Plan your month and set goals.', icon: CalendarIcon, href: '/calendar', gradient: 'from-pink-400 to-pink-600', hasToggle: false },
+  { id: '4', title: 'Annual/Yearly Planner', description: 'Set your vision for the entire year.', icon: Book, href: '/tasks', gradient: 'from-green-400 to-green-600', hasToggle: false },
+  { id: '5', title: 'Goal Planner', description: 'Define and track your personal goals.', icon: Target, href: '/tasks', gradient: 'from-yellow-400 to-yellow-600', hasToggle: true },
+  { id: '6', title: 'Productivity Planner', description: 'Boost your efficiency and focus.', icon: Briefcase, href: '/tasks', gradient: 'from-indigo-400 to-indigo-600', hasToggle: true },
+  { id: '7', title: 'Health and Fitness Planner', description: 'Track workouts, meals, and wellness.', icon: Heart, href: '/tasks', gradient: 'from-red-400 to-red-600', hasToggle: true },
+  { id: '8', title: 'Meal/Diet Planner', description: 'Plan your meals and track nutrition.', icon: Utensils, href: '/tasks', gradient: 'from-orange-400 to-orange-600', hasToggle: true },
+  { id: '9', title: 'Budget/Financial Planner', description: 'Manage your finances and savings.', icon: PiggyBank, href: '/tasks', gradient: 'from-teal-400 to-teal-600', hasToggle: true },
+  { id: '10', title: 'Academic/Study Planner', description: 'Organize studies and assignments.', icon: GraduationCap, href: '/tasks', gradient: 'from-cyan-400 to-cyan-600', hasToggle: true },
+  { id: '11', title: 'Work Planner', description: 'Manage your work tasks and projects.', icon: Briefcase, href: '/tasks', gradient: 'from-gray-400 to-gray-600', hasToggle: true },
+  { id: '12', title: 'Family Planner', description: 'Coordinate schedules for the family.', icon: Users, href: '/calendar', gradient: 'from-rose-400 to-rose-600', hasToggle: true },
+  { id: '13', title: 'Bullet Journal', description: 'A flexible and creative organization.', icon: Feather, href: '/tasks', gradient: 'from-lime-400 to-lime-600', hasToggle: true },
+  { id: '14', title: 'Wedding/Event Planner', description: 'Plan every detail of your special day.', icon: Heart, href: '/calendar', gradient: 'from-fuchsia-400 to-fuchsia-600', hasToggle: true },
+  { id: '15', title: 'Travel/Trip Planner', description: 'Organize your itinerary and bookings.', icon: Plane, href: '/tasks', gradient: 'from-sky-400 to-sky-600', hasToggle: false },
 ];
 
-type PlannerType = typeof initialPlannerTypes[0];
+type PlannerType = typeof initialPlannerTypes[0] & { enabled?: boolean };
 
-function SortablePlannerCard({ planner, ...props }: { planner: PlannerType }) {
+function SortablePlannerCard({ planner, onToggle, ...props }: { planner: PlannerType; onToggle: (id: string, enabled: boolean) => void; }) {
   const {
     attributes,
     listeners,
@@ -83,20 +83,41 @@ function SortablePlannerCard({ planner, ...props }: { planner: PlannerType }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <PlannerCard planner={planner} />
+      <PlannerCard planner={planner} onToggle={onToggle} />
     </div>
   );
 }
 
-function PlannerCard({ planner }: { planner: PlannerType }) {
+function PlannerCard({ planner, onToggle }: { planner: PlannerType; onToggle?: (id: string, enabled: boolean) => void; }) {
+    const isEnabled = planner.enabled ?? true;
+
+    const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onToggle) {
+          onToggle(planner.id, !isEnabled);
+        }
+    }
+
     return (
         <div
         className={cn(
-          'rounded-2xl bg-gradient-to-br shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 transform animate-fade-in text-white h-full',
-          planner.gradient
+          'relative rounded-2xl bg-gradient-to-br shadow-xl hover:shadow-2xl transition-all duration-300 transform animate-fade-in text-white h-full',
+          isEnabled ? planner.gradient : 'from-gray-500 to-gray-700',
+          !isEnabled && 'opacity-70 grayscale',
+          'hover:scale-105'
         )}
       >
-        <Link href={planner.href} className="block h-full">
+        {planner.hasToggle && onToggle && (
+            <div className="absolute top-4 right-4 z-10">
+                <Switch
+                    checked={isEnabled}
+                    onCheckedChange={(checked) => onToggle(planner.id, checked)}
+                    onClick={(e) => e.stopPropagation()}
+                />
+            </div>
+        )}
+        <Link href={isEnabled ? planner.href : '#'} className={cn("block h-full", !isEnabled && "pointer-events-none")}>
           <Card className="bg-transparent border-none h-full flex flex-col cursor-grab">
             <CardHeader>
               <div className="flex items-center gap-4 mb-2">
@@ -109,7 +130,7 @@ function PlannerCard({ planner }: { planner: PlannerType }) {
             </CardHeader>
             <CardContent className="flex-grow flex items-end">
               <div className="w-full flex justify-end">
-                  <ArrowRight className="h-6 w-6" />
+                  {isEnabled && <ArrowRight className="h-6 w-6" />}
               </div>
             </CardContent>
           </Card>
@@ -126,18 +147,48 @@ export default function PlannersPage() {
   useEffect(() => {
     try {
       const savedOrder = localStorage.getItem('plannerOrder');
+      const savedStates = JSON.parse(localStorage.getItem('plannerStates') || '{}') as Record<string, boolean>;
+
+      const plannersWithState = initialPlannerTypes.map(p => ({
+        ...p,
+        enabled: savedStates[p.id] !== undefined ? savedStates[p.id] : true
+      }));
+
       if (savedOrder) {
         const orderedIds = JSON.parse(savedOrder) as string[];
-        const orderedPlanners = orderedIds.map(id => initialPlannerTypes.find(p => p.id === id)).filter(Boolean) as PlannerType[];
-        const remainingPlanners = initialPlannerTypes.filter(p => !orderedIds.includes(p.id));
+        const orderedPlanners = orderedIds.map(id => plannersWithState.find(p => p.id === id)).filter(Boolean) as PlannerType[];
+        const remainingPlanners = plannersWithState.filter(p => !orderedIds.includes(p.id));
         setPlanners([...orderedPlanners, ...remainingPlanners]);
       } else {
-        setPlanners(initialPlannerTypes);
+        setPlanners(plannersWithState);
       }
     } catch (e) {
-        setPlanners(initialPlannerTypes);
+        setPlanners(initialPlannerTypes.map(p => ({...p, enabled: true})));
     }
   }, []);
+
+  const handleTogglePlanner = (id: string, enabled: boolean) => {
+    const newPlanners = planners.map(p => p.id === id ? { ...p, enabled } : p);
+    setPlanners(newPlanners);
+
+    try {
+        const plannerStates = newPlanners.reduce((acc, p) => {
+            acc[p.id] = p.enabled ?? true;
+            return acc;
+        }, {} as Record<string, boolean>);
+        localStorage.setItem('plannerStates', JSON.stringify(plannerStates));
+        const planner = newPlanners.find(p => p.id === id);
+        toast({
+            title: `${planner?.title} ${enabled ? 'enabled' : 'disabled'}!`,
+        });
+    } catch (e) {
+        toast({
+            variant: 'destructive',
+            title: 'Could not save planner state',
+        });
+    }
+  }
+
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -192,10 +243,10 @@ export default function PlannersPage() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext items={planners} strategy={rectSortingStrategy}>
+        <SortableContext items={planners.map(p => p.id)} strategy={rectSortingStrategy}>
           <div className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {planners.map((planner) => (
-              <SortablePlannerCard key={planner.id} planner={planner} />
+              <SortablePlannerCard key={planner.id} planner={planner} onToggle={handleTogglePlanner} />
             ))}
           </div>
         </SortableContext>
