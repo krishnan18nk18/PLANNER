@@ -46,21 +46,21 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 
 const initialPlannerTypes = [
-  { id: '1', title: 'Daily Planner', description: 'Organize your day with a detailed to-do list.', icon: CheckCircle, href: '/tasks', gradient: 'from-blue-400 to-blue-600', hasToggle: true },
-  { id: '2', title: 'Weekly Planner', description: 'Get a bird\'s eye view of your week.', icon: CalendarDays, href: '/calendar', gradient: 'from-purple-400 to-purple-600', hasToggle: true },
-  { id: '3', title: 'Monthly Planner', description: 'Plan your month and set goals.', icon: CalendarIcon, href: '/calendar', gradient: 'from-pink-400 to-pink-600', hasToggle: true },
-  { id: '4', title: 'Annual/Yearly Planner', description: 'Set your vision for the entire year.', icon: Book, href: '/tasks', gradient: 'from-green-400 to-green-600', hasToggle: true },
-  { id: '5', title: 'Goal Planner', description: 'Define and track your personal goals.', icon: Target, href: '/tasks', gradient: 'from-yellow-400 to-yellow-600', hasToggle: true },
-  { id: '6', title: 'Productivity Planner', description: 'Boost your efficiency and focus.', icon: Briefcase, href: '/tasks', gradient: 'from-indigo-400 to-indigo-600', hasToggle: true },
-  { id: '7', title: 'Health and Fitness Planner', description: 'Track workouts, meals, and wellness.', icon: Heart, href: '/tasks', gradient: 'from-red-400 to-red-600', hasToggle: true },
-  { id: '8', title: 'Meal/Diet Planner', description: 'Plan your meals and track nutrition.', icon: Utensils, href: '/tasks', gradient: 'from-orange-400 to-orange-600', hasToggle: true },
-  { id: '9', title: 'Budget/Financial Planner', description: 'Manage your finances and savings.', icon: PiggyBank, href: '/tasks', gradient: 'from-teal-400 to-teal-600', hasToggle: true },
-  { id: '10', title: 'Academic/Study Planner', description: 'Organize studies and assignments.', icon: GraduationCap, href: '/tasks', gradient: 'from-cyan-400 to-cyan-600', hasToggle: true },
-  { id: '11', title: 'Work Planner', description: 'Manage your work tasks and projects.', icon: Briefcase, href: '/tasks', gradient: 'from-gray-400 to-gray-600', hasToggle: true },
-  { id: '12', title: 'Family Planner', description: 'Coordinate schedules for the family.', icon: Users, href: '/calendar', gradient: 'from-rose-400 to-rose-600', hasToggle: true },
-  { id: '13', title: 'Bullet Journal', description: 'A flexible and creative organization.', icon: Feather, href: '/tasks', gradient: 'from-lime-400 to-lime-600', hasToggle: true },
-  { id: '14', title: 'Wedding/Event Planner', description: 'Plan every detail of your special day.', icon: Heart, href: '/calendar', gradient: 'from-fuchsia-400 to-fuchsia-600', hasToggle: true },
-  { id: '15', title: 'Travel/Trip Planner', description: 'Organize your itinerary and bookings.', icon: Plane, href: '/tasks', gradient: 'from-sky-400 to-sky-600', hasToggle: true },
+  { id: 'daily', title: 'Daily Planner', description: 'Organize your day with a detailed to-do list.', icon: CheckCircle, href: '/planners/daily', gradient: 'from-blue-400 to-blue-600', hasToggle: true },
+  { id: 'weekly', title: 'Weekly Planner', description: 'Get a bird\'s eye view of your week.', icon: CalendarDays, href: '/planners/weekly', gradient: 'from-purple-400 to-purple-600', hasToggle: true },
+  { id: 'monthly', title: 'Monthly Planner', description: 'Plan your month and set goals.', icon: CalendarIcon, href: '/planners/monthly', gradient: 'from-pink-400 to-pink-600', hasToggle: true },
+  { id: 'annual', title: 'Annual/Yearly Planner', description: 'Set your vision for the entire year.', icon: Book, href: '/planners/annual', gradient: 'from-green-400 to-green-600', hasToggle: true },
+  { id: 'goal', title: 'Goal Planner', description: 'Define and track your personal goals.', icon: Target, href: '/planners/goal', gradient: 'from-yellow-400 to-yellow-600', hasToggle: true },
+  { id: 'productivity', title: 'Productivity Planner', description: 'Boost your efficiency and focus.', icon: Briefcase, href: '/planners/productivity', gradient: 'from-indigo-400 to-indigo-600', hasToggle: true },
+  { id: 'health', title: 'Health and Fitness Planner', description: 'Track workouts, meals, and wellness.', icon: Heart, href: '/planners/health', gradient: 'from-red-400 to-red-600', hasToggle: true },
+  { id: 'meal', title: 'Meal/Diet Planner', description: 'Plan your meals and track nutrition.', icon: Utensils, href: '/planners/meal', gradient: 'from-orange-400 to-orange-600', hasToggle: true },
+  { id: 'budget', title: 'Budget/Financial Planner', description: 'Manage your finances and savings.', icon: PiggyBank, href: '/planners/budget', gradient: 'from-teal-400 to-teal-600', hasToggle: true },
+  { id: 'academic', title: 'Academic/Study Planner', description: 'Organize studies and assignments.', icon: GraduationCap, href: '/planners/academic', gradient: 'from-cyan-400 to-cyan-600', hasToggle: true },
+  { id: 'work', title: 'Work Planner', description: 'Manage your work tasks and projects.', icon: Briefcase, href: '/planners/work', gradient: 'from-gray-400 to-gray-600', hasToggle: true },
+  { id: 'family', title: 'Family Planner', description: 'Coordinate schedules for the family.', icon: Users, href: '/planners/family', gradient: 'from-rose-400 to-rose-600', hasToggle: true },
+  { id: 'bullet', title: 'Bullet Journal', description: 'A flexible and creative organization.', icon: Feather, href: '/planners/bullet', gradient: 'from-lime-400 to-lime-600', hasToggle: true },
+  { id: 'wedding', title: 'Wedding/Event Planner', description: 'Plan every detail of your special day.', icon: Heart, href: '/planners/wedding', gradient: 'from-fuchsia-400 to-fuchsia-600', hasToggle: true },
+  { id: 'travel', title: 'Travel/Trip Planner', description: 'Organize your itinerary and bookings.', icon: Plane, href: '/planners/travel', gradient: 'from-sky-400 to-sky-600', hasToggle: true },
 ];
 
 type PlannerType = typeof initialPlannerTypes[0] & { enabled?: boolean };
@@ -106,12 +106,13 @@ function PlannerCard({ planner, onToggle, dragAttributes, dragListeners }: { pla
                 <Switch
                     checked={isEnabled}
                     onCheckedChange={(checked) => onToggle(planner.id, checked)}
+                    onClick={(e) => e.stopPropagation()}
                 />
             </div>
         )}
         
-          <Card className="bg-transparent border-none h-full flex flex-col cursor-grab" {...dragAttributes} {...dragListeners}>
-            <CardHeader>
+          <div className="bg-transparent border-none h-full flex flex-col" >
+            <CardHeader {...dragAttributes} {...dragListeners} className="cursor-grab flex-grow">
               <div className="flex items-center gap-4 mb-2">
                 <div className="p-3 bg-white/20 rounded-lg">
                   <planner.icon className="w-8 h-8" />
@@ -120,7 +121,7 @@ function PlannerCard({ planner, onToggle, dragAttributes, dragListeners }: { pla
               </div>
               <CardDescription className="text-gray-200">{planner.description}</CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow flex items-end">
+            <CardContent className="flex items-end">
               <div className="w-full flex justify-end">
                   {isEnabled && (
                      <Button asChild variant="ghost" className="bg-white/20 hover:bg-white/30 rounded-full w-12 h-12">
@@ -131,7 +132,7 @@ function PlannerCard({ planner, onToggle, dragAttributes, dragListeners }: { pla
                   )}
               </div>
             </CardContent>
-          </Card>
+          </div>
       </div>
     )
 }
@@ -251,7 +252,7 @@ export default function PlannersPage() {
             <DragOverlay>
                 {activePlanner ? (
                     <div className="rounded-2xl bg-gradient-to-br shadow-2xl scale-110 transform text-white ring-4 ring-primary glow">
-                        <PlannerCard planner={activePlanner} />
+                        <PlannerCard planner={activePlanner} onToggle={() => {}} />
                     </div>
                 ) : null}
             </DragOverlay>,
@@ -261,5 +262,3 @@ export default function PlannersPage() {
     </div>
   );
 }
-
-    
