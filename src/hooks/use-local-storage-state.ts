@@ -1,3 +1,4 @@
+// This hook is no longer recommended. Please use Firestore for state management.
 import { useState, useEffect } from 'react';
 
 function getStorageValue<T>(key: string, defaultValue: T): T {

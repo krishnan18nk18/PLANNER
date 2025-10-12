@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import type { Task } from '@/lib/types';
-import { initialTasks } from '@/lib/data';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import {
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  writeBatch,
+} from 'firebase/firestore';
 import { CommandCentreSearch } from '@/components/dashboard/command-centre-search';
 import { FloatingNotes } from '@/components/dashboard/floating-notes';
 import { TaskAnalytics } from '@/components/dashboard/task-analytics';
@@ -10,7 +18,7 @@ import { PriorityTaskColumns } from '@/components/dashboard/priority-task-column
 import { LiveActivities } from '@/components/dashboard/live-activities';
 import { DailySchedule } from '@/components/dashboard/daily-schedule';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   DndContext,
@@ -36,7 +44,8 @@ import { cn } from '@/lib/utils';
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { TaskForm } from '@/components/tasks/task-form';
-
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const componentMap = {
   FloatingNotes,
@@ -94,13 +103,18 @@ const SortableItem = ({ id, children }: { id: string; children: React.ReactNode 
 
 export default function DashboardPage() {
     const { toast } = useToast();
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const { user } = useUser();
+    const { db } = useFirestore();
+
+    const { data: tasks, loading: tasksLoading } = useCollection<Task>(user ? `users/${user.uid}/tasks` : null);
+    
     const [componentOrder, setComponentOrder] = useState<ComponentKey[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
     useEffect(() => {
+        // This could be migrated to Firestore user settings
         try {
             const savedOrder = localStorage.getItem('dashboardLayout');
             if (savedOrder) {
@@ -117,18 +131,21 @@ export default function DashboardPage() {
     }, []);
 
     const handleAddTask = (taskData: Omit<Task, 'id' | 'completed'>) => {
-      const newTasks = [
-        ...tasks,
-        { ...taskData, id: Date.now().toString(), completed: false },
-      ].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
-      setTasks(newTasks);
+      if (!db || !user) return;
+      const taskCollection = collection(db, 'users', user.uid, 'tasks');
+      const newTask = { ...taskData, id: '', completed: false };
+      addDoc(taskCollection, newTask)
+        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({path: taskCollection.path, operation: 'create', requestResourceData: newTask})));
+      
       setIsSheetOpen(false);
     };
 
     const handleUpdateTask = (updatedTask: Task) => {
-      const newTasks = tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
-      setTasks(newTasks);
+      if (!db || !user || !updatedTask.id) return;
+      const taskDoc = doc(db, 'users', user.uid, 'tasks', updatedTask.id);
+      updateDoc(taskDoc, updatedTask)
+        .catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({path: taskDoc.path, operation: 'update', requestResourceData: updatedTask})));
+
       setIsSheetOpen(false);
       setEditingTask(undefined);
     };
@@ -138,27 +155,22 @@ export default function DashboardPage() {
       setIsSheetOpen(true);
     };
 
-    const dailyTasks = [
-        { id: '1', title: 'Take the dog for a walk', description: 'Ensure you scoop the poop and take 4 rounds around the apartments. Then serve the food.', dueDate: '2024-03-12T07:00:00', completed: true, priority: 'Medium' },
-        { id: '2', title: 'Go to the Cult Fit Classes', description: 'Do legs and triceps with the coach and group', dueDate: '2024-03-12T08:00:00', completed: false, priority: 'High' },
-        { id: '3', title: 'Conduct Project Review meeting', description: 'Call on to check all developers, designers and business analysts.', dueDate: '2024-03-12T09:00:00', completed: false, priority: 'High' },
-        { id: '4', title: 'Coffee with Clients at Barista', description: 'Greet new client with a coffee at nearby barista from 10:00 to 10:30', dueDate: '2024-03-12T10:00:00', completed: false, priority: 'Medium' },
-      ];
+    const dailyTasks = tasks?.slice(0, 4) || []; // Using tasks from firestore as example
 
-  const highPriorityTasks = tasks.filter(t => t.priority === 'High');
-  const mediumPriorityTasks = tasks.filter(t => t.priority === 'Medium');
-  const lowPriorityTasks = tasks.filter(t => t.priority === 'Low');
+  const highPriorityTasks = tasks?.filter(t => t.priority === 'High') || [];
+  const mediumPriorityTasks = tasks?.filter(t => t.priority === 'Medium') || [];
+  const lowPriorityTasks = tasks?.filter(t => t.priority === 'Low') || [];
 
   const componentProps: Record<ComponentKey, any> = {
     FloatingNotes: {},
-    TaskAnalytics: { tasks: tasks },
+    TaskAnalytics: { tasks: tasks || [] },
     PriorityTaskColumns: { 
         highPriorityTasks,
         mediumPriorityTasks,
         lowPriorityTasks,
     },
     DailySchedule: { tasks: dailyTasks },
-    LiveActivities: { tasks: tasks },
+    LiveActivities: { tasks: tasks || [] },
   };
 
   const sensors = useSensors(
@@ -205,6 +217,14 @@ export default function DashboardPage() {
   }
 
   const activeComponent = activeId ? dashboardComponents[activeId as ComponentKey] : null;
+
+  if (tasksLoading) {
+    return (
+        <div className="flex h-full w-full items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    )
+  }
 
   return (
     <>
@@ -269,5 +289,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    

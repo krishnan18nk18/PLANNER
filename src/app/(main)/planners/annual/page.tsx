@@ -6,63 +6,95 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar, Target, Trash2, Upload, Plus, Edit, Award, Heart, DollarSign } from 'lucide-react';
+import { ArrowLeft, Calendar, Target, Trash2, Upload, Plus, Edit, Award, Heart, DollarSign, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { eachMonthOfInterval, format, startOfYear, endOfYear, getYear, setYear, getDaysInMonth } from 'date-fns';
-import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { useDoc, useUser, useFirestore } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-const initialGoals = [{ id: 1, text: 'Launch a new side project', quarter: 1, completed: false }];
-const initialBucketList = [{ id: 1, text: 'Learn a new language', completed: false }];
-const initialHabits = [{ id: 1, name: 'Read 20 books', progress: 50 }];
-const initialFinancials = { income: 80000, expenses: 50000, savings: 20000, investments: 10000 };
-const initialWins = [{ id: 1, text: 'Completed a marathon', date: '2024-03-15' }];
+const initialPlannerState = {
+    goals: [{ id: 1, text: 'Launch a new side project', quarter: 1, completed: false }],
+    bucketList: [{ id: 1, text: 'Learn a new language', completed: false }],
+    habits: [{ id: 1, name: 'Read 20 books', progress: 50 }],
+    financials: { income: 80000, expenses: 50000, savings: 20000, investments: 10000 },
+    wins: [{ id: 1, text: 'Completed a marathon', date: '2024-03-15' }],
+    notes: '',
+    q1Notes: '',
+    q2Notes: '',
+    q3Notes: '',
+    q4Notes: '',
+};
 
 export default function AnnualPlannerPage() {
   const { toast } = useToast();
+  const { user } = useUser();
+  const { db } = useFirestore();
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const year = getYear(currentDate);
-  const [goals, setGoals] = useLocalStorageState(`annualPlanner_goals_${year}`, initialGoals);
-  const [bucketList, setBucketList] = useLocalStorageState(`annualPlanner_bucketList_${year}`, initialBucketList);
-  const [habits, setHabits] = useLocalStorageState(`annualPlanner_habits_${year}`, initialHabits);
-  const [financials, setFinancials] = useLocalStorageState(`annualPlanner_financials_${year}`, initialFinancials);
-  const [wins, setWins] = useLocalStorageState(`annualPlanner_wins_${year}`, initialWins);
-  const [notes, setNotes] = useLocalStorageState(`annualPlanner_notes_${year}`, '');
+
+  const plannerPath = user ? `users/${user.uid}/planners/annual-${year}` : null;
+  const { data: plannerData, loading } = useDoc<typeof initialPlannerState>(plannerPath);
+  
+  const plannerState = plannerData || initialPlannerState;
+
+  const handleSave = () => {
+    if (!db || !user) return;
+    const docRef = doc(db, plannerPath!);
+    setDoc(docRef, plannerState, { merge: true })
+      .then(() => {
+        toast({
+          title: 'Annual Planner Saved!',
+          description: `Your plans for ${year} have been saved.`,
+        });
+      })
+      .catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({path: docRef.path, operation: 'write', requestResourceData: plannerState}));
+      });
+  };
+  
+  const updatePlanner = (data: Partial<typeof initialPlannerState>) => {
+     if (!db || !user) return;
+    const docRef = doc(db, plannerPath!);
+    setDoc(docRef, data, { merge: true })
+      .catch((err) => {
+         errorEmitter.emit('permission-error', new FirestorePermissionError({path: docRef.path, operation: 'write', requestResourceData: data}));
+      });
+  };
 
   const months = eachMonthOfInterval({
     start: startOfYear(currentDate),
     end: endOfYear(currentDate)
   });
 
-  const handleSave = () => {
-    toast({
-      title: 'Annual Planner Saved!',
-      description: 'Your plans for the year have been saved.',
-    });
-  };
-
-  const addGoal = () => setGoals([...goals, { id: Date.now(), text: '', quarter: 1, completed: false }]);
-  const removeGoal = (id: number) => setGoals(goals.filter(item => item.id !== id));
+  const addGoal = () => updatePlanner({ goals: [...plannerState.goals, { id: Date.now(), text: '', quarter: 1, completed: false }]});
+  const removeGoal = (id: number) => updatePlanner({ goals: plannerState.goals.filter(item => item.id !== id) });
   
-  const addBucketListItem = () => setBucketList([...bucketList, { id: Date.now(), text: '', completed: false }]);
-  const removeBucketListItem = (id: number) => setBucketList(bucketList.filter(item => item.id !== id));
+  const addBucketListItem = () => updatePlanner({ bucketList: [...plannerState.bucketList, { id: Date.now(), text: '', completed: false }] });
+  const removeBucketListItem = (id: number) => updatePlanner({ bucketList: plannerState.bucketList.filter(item => item.id !== id) });
   
-  const addHabit = () => setHabits([...habits, { id: Date.now(), name: 'New Habit', progress: 0 }]);
-  const removeHabit = (id: number) => setHabits(habits.filter(h => h.id !== id));
+  const addHabit = () => updatePlanner({ habits: [...plannerState.habits, { id: Date.now(), name: 'New Habit', progress: 0 }] });
 
-  const addWin = () => setWins([...wins, { id: Date.now(), text: '', date: '' }]);
-  const removeWin = (id: number) => setWins(wins.filter(w => w.id !== id));
+  const addWin = () => updatePlanner({ wins: [...plannerState.wins, { id: Date.now(), text: '', date: '' }] });
+  const removeWin = (id: number) => updatePlanner({ wins: plannerState.wins.filter(w => w.id !== id) });
 
   const financialChartData = [
-      { name: 'Expenses', value: financials.expenses },
-      { name: 'Savings', value: financials.savings },
-      { name: 'Investments', value: financials.investments },
-  ]
+      { name: 'Expenses', value: plannerState.financials.expenses },
+      { name: 'Savings', value: plannerState.financials.savings },
+      { name: 'Investments', value: plannerState.financials.investments },
+  ];
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin" /></div>
+  }
 
   return (
     <div className="space-y-6 animate-fade-in p-4 sm:p-6 lg:p-8">
@@ -95,10 +127,10 @@ export default function AnnualPlannerPage() {
                     <CardTitle className="flex items-center gap-2"><Target /> Annual Goals & Milestones</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {goals.map(goal => (
+                    {plannerState.goals.map(goal => (
                         <div key={goal.id} className="p-2 bg-white/10 rounded-lg mb-2 flex items-center gap-2">
-                            <Checkbox checked={goal.completed} onCheckedChange={checked => setGoals(goals.map(g => g.id === goal.id ? {...g, completed: !!checked } : g))} />
-                            <Input value={goal.text} onChange={e => setGoals(goals.map(g => g.id === goal.id ? {...g, text: e.target.value } : g))} className="bg-transparent border-none flex-grow" />
+                            <Checkbox checked={goal.completed} onCheckedChange={checked => updatePlanner({ goals: plannerState.goals.map(g => g.id === goal.id ? {...g, completed: !!checked } : g)})} />
+                            <Input value={goal.text} onChange={e => updatePlanner({ goals: plannerState.goals.map(g => g.id === goal.id ? {...g, text: e.target.value } : g)})} className="bg-transparent border-none flex-grow" />
                             <Button variant="ghost" size="icon" onClick={() => removeGoal(goal.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </div>
                     ))}
@@ -110,10 +142,10 @@ export default function AnnualPlannerPage() {
                     <CardTitle className="flex items-center gap-2"><Heart /> Bucket List</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {bucketList.map(item => (
+                    {plannerState.bucketList.map(item => (
                         <div key={item.id} className="p-2 bg-white/10 rounded-lg mb-2 flex items-center gap-2">
-                            <Checkbox checked={item.completed} onCheckedChange={checked => setBucketList(bucketList.map(b => b.id === item.id ? {...b, completed: !!checked } : b))} />
-                            <Input value={item.text} onChange={e => setBucketList(bucketList.map(b => b.id === item.id ? {...b, text: e.target.value} : b))} className="bg-transparent border-none flex-grow" />
+                            <Checkbox checked={item.completed} onCheckedChange={checked => updatePlanner({ bucketList: plannerState.bucketList.map(b => b.id === item.id ? {...b, completed: !!checked } : b)})} />
+                            <Input value={item.text} onChange={e => updatePlanner({ bucketList: plannerState.bucketList.map(b => b.id === item.id ? {...b, text: e.target.value} : b)})} className="bg-transparent border-none flex-grow" />
                             <Button variant="ghost" size="icon" onClick={() => removeBucketListItem(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </div>
                     ))}
@@ -140,10 +172,10 @@ export default function AnnualPlannerPage() {
                     <CardTitle>Habit Tracker</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {habits.map(habit => (
+                    {plannerState.habits.map(habit => (
                         <div key={habit.id} className="mb-4">
                             <div className="flex justify-between items-center mb-1">
-                               <Input value={habit.name} onChange={e => setHabits(habits.map(h => h.id === habit.id ? {...h, name: e.target.value} : h))} className="bg-transparent border-none font-semibold" />
+                               <Input value={habit.name} onChange={e => updatePlanner({ habits: plannerState.habits.map(h => h.id === habit.id ? {...h, name: e.target.value} : h)})} className="bg-transparent border-none font-semibold" />
                                 <span className="text-sm font-bold">{habit.progress}%</span>
                             </div>
                             <Progress value={habit.progress} />
@@ -173,10 +205,10 @@ export default function AnnualPlannerPage() {
                 <CardTitle className="flex items-center gap-2"><Award /> Achievements & Wins</CardTitle>
             </CardHeader>
             <CardContent>
-                {wins.map(win => (
+                {plannerState.wins.map(win => (
                     <div key={win.id} className="grid grid-cols-3 items-center gap-2 mb-2 p-2 rounded-lg bg-white/10">
-                        <Input value={win.text} onChange={e => setWins(wins.map(w => w.id === win.id ? {...w, text: e.target.value} : w))} placeholder="Achievement" className="bg-transparent col-span-2" />
-                        <Input type="date" value={win.date} onChange={e => setWins(wins.map(w => w.id === win.id ? {...w, date: e.target.value} : w))} className="bg-transparent"/>
+                        <Input value={win.text} onChange={e => updatePlanner({ wins: plannerState.wins.map(w => w.id === win.id ? {...w, text: e.target.value} : w)})} placeholder="Achievement" className="bg-transparent col-span-2" />
+                        <Input type="date" value={win.date} onChange={e => updatePlanner({ wins: plannerState.wins.map(w => w.id === win.id ? {...w, date: e.target.value} : w)})} className="bg-transparent"/>
                     </div>
                 ))}
                 <Button onClick={addWin} className="w-full mt-2">Add Achievement</Button>
@@ -187,10 +219,10 @@ export default function AnnualPlannerPage() {
             <CardHeader><CardTitle>Quarterly Reflection</CardTitle></CardHeader>
             <CardContent>
                 <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="q1"><AccordionTrigger>Q1 Review</AccordionTrigger><AccordionContent><Textarea placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
-                    <AccordionItem value="q2"><AccordionTrigger>Q2 Review</AccordionTrigger><AccordionContent><Textarea placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
-                    <AccordionItem value="q3"><AccordionTrigger>Q3 Review</AccordionTrigger><AccordionContent><Textarea placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
-                    <AccordionItem value="q4"><AccordionTrigger>Q4 Review</AccordionTrigger><AccordionContent><Textarea placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
+                    <AccordionItem value="q1"><AccordionTrigger>Q1 Review</AccordionTrigger><AccordionContent><Textarea value={plannerState.q1Notes} onChange={e => updatePlanner({ q1Notes: e.target.value })} placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
+                    <AccordionItem value="q2"><AccordionTrigger>Q2 Review</AccordionTrigger><AccordionContent><Textarea value={plannerState.q2Notes} onChange={e => updatePlanner({ q2Notes: e.target.value })} placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
+                    <AccordionItem value="q3"><AccordionTrigger>Q3 Review</AccordionTrigger><AccordionContent><Textarea value={plannerState.q3Notes} onChange={e => updatePlanner({ q3Notes: e.target.value })} placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
+                    <AccordionItem value="q4"><AccordionTrigger>Q4 Review</AccordionTrigger><AccordionContent><Textarea value={plannerState.q4Notes} onChange={e => updatePlanner({ q4Notes: e.target.value })} placeholder="What went well? What could be improved?" className="bg-white/5"/></AccordionContent></AccordionItem>
                 </Accordion>
             </CardContent>
         </Card>
@@ -198,7 +230,7 @@ export default function AnnualPlannerPage() {
          <Card className="glass-card">
             <CardHeader><CardTitle>Notes & Future Plans</CardTitle></CardHeader>
             <CardContent>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ideas, dreams, and schemes for the year..." className="h-40 bg-white/5 border-white/20"/>
+                <Textarea value={plannerState.notes} onChange={(e) => updatePlanner({ notes: e.target.value })} placeholder="Ideas, dreams, and schemes for the year..." className="h-40 bg-white/5 border-white/20"/>
             </CardContent>
         </Card>
 
