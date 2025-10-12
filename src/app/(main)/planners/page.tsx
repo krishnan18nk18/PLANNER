@@ -1,7 +1,23 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Book, CalendarDays, CheckCircle } from 'lucide-react';
+import {
+  ArrowRight,
+  Book,
+  CalendarDays,
+  CheckCircle,
+  PiggyBank,
+  GraduationCap,
+  Briefcase,
+  Users,
+  Feather,
+  Heart,
+  Plane,
+  Scale,
+  Utensils,
+  Calendar as CalendarIcon,
+  Target,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
@@ -24,13 +40,98 @@ const plannerTypes = [
     cta: 'Go to Calendar',
   },
   {
-    title: 'Monthly Goals',
-    description: 'Set and track your long-term goals for the month.',
+    title: 'Monthly Planner',
+    description: 'Plan your month, set goals, and track important dates.',
+    icon: CalendarIcon,
+    href: '/calendar',
+    cta: 'Go to Calendar',
+  },
+  {
+    title: 'Annual/Yearly Planner',
+    description: 'Set your vision and goals for the entire year.',
     icon: Book,
-    href: '/tasks', // Or a new goals page in the future
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Goal Planner',
+    description: 'Define and track your personal and professional goals.',
+    icon: Target,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Productivity Planner',
+    description: 'Boost your efficiency and focus on what matters most.',
+    icon: Briefcase,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Health and Fitness Planner',
+    description: 'Track workouts, meals, and wellness goals.',
+    icon: Heart,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Meal/Diet Planner',
+    description: 'Plan your meals and track your nutrition.',
+    icon: Utensils,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Budget/Financial Planner',
+    description: 'Manage your finances, savings, and expenses.',
+    icon: PiggyBank,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Academic/Study Planner',
+    description: 'Organize your studies, assignments, and exams.',
+    icon: GraduationCap,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Work Planner',
+    description: 'Manage your work tasks, projects, and deadlines.',
+    icon: Briefcase,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Family Planner',
+    description: 'Coordinate schedules and activities for the whole family.',
+    icon: Users,
+    href: '/calendar',
+    cta: 'Go to Calendar',
+  },
+  {
+    title: 'Bullet Journal',
+    description: 'A flexible and creative way to organize your life.',
+    icon: Feather,
+    href: '/tasks',
+    cta: 'Go to Tasks',
+  },
+  {
+    title: 'Wedding/Event Planner',
+    description: 'Plan every detail of your special occasion.',
+    icon: Heart,
+    href: '/calendar',
+    cta: 'Go to Calendar',
+  },
+  {
+    title: 'Travel/Trip Planner',
+    description: 'Organize your itinerary, bookings, and packing lists.',
+    icon: Plane,
+    href: '/tasks',
     cta: 'Go to Tasks',
   },
 ];
+
 
 export default function PlannersPage() {
   return (
