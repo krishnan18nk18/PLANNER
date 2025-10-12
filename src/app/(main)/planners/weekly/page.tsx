@@ -13,12 +13,21 @@ import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from 'date-fns';
 import { cn } from '@/lib/utils';
 
+const iconMap = {
+    Droplet,
+    Dumbbell,
+    BookOpen,
+    Sparkles
+};
+
+type HabitIcon = keyof typeof iconMap;
+
 const initialGoals = ['Complete project proposal', 'Go to the gym 3 times', 'Read 50 pages of a book'];
-const initialHabits = [
-    { name: 'Water', icon: Droplet, days: Array(7).fill(false) },
-    { name: 'Workout', icon: Dumbbell, days: Array(7).fill(false) },
-    { name: 'Read', icon: BookOpen, days: Array(7).fill(false) },
-    { name: 'Meditate', icon: Sparkles, days: Array(7).fill(false) },
+const initialHabits: { name: string, icon: HabitIcon, days: boolean[] }[] = [
+    { name: 'Water', icon: 'Droplet', days: Array(7).fill(false) },
+    { name: 'Workout', icon: 'Dumbbell', days: Array(7).fill(false) },
+    { name: 'Read', icon: 'BookOpen', days: Array(7).fill(false) },
+    { name: 'Meditate', icon: 'Sparkles', days: Array(7).fill(false) },
 ];
 const initialWeeklySchedule = Array.from({ length: 7 }, () => ({ tasks: [{id: 1, text: '', completed: false}] }));
 
@@ -127,10 +136,12 @@ export default function WeeklyPlannerPage() {
                     <div className="flex justify-end gap-2 text-xs text-muted-foreground">
                         {weekDays.map(day => <div key={day.toString()} className="w-6 text-center">{format(day, 'E')}</div>)}
                     </div>
-                    {habits.map((habit, habitIndex) => (
+                    {habits.map((habit, habitIndex) => {
+                        const Icon = iconMap[habit.icon];
+                        return (
                         <div key={habitIndex} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <habit.icon className="h-5 w-5 text-primary" />
+                                <Icon className="h-5 w-5 text-primary" />
                                 <span>{habit.name}</span>
                             </div>
                             <div className="flex gap-2">
@@ -143,7 +154,8 @@ export default function WeeklyPlannerPage() {
                                 ))}
                             </div>
                         </div>
-                    ))}
+                        )
+                    })}
                 </CardContent>
             </Card>
         </div>
