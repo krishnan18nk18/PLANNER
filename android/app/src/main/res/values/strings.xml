@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PlanVerse</string>
+    <string name="title_activity_main">PlanVerse</string>
+    <string name="package_name">com.yourcompany.planverse</string>
+    <string name="custom_url_scheme">com.yourcompany.planverse</string>
+</resources>
