@@ -28,8 +28,8 @@ export default function DashboardPage() {
       </div>
       <div className="lg:col-span-3 space-y-6">
         <UserProfile />
-        <GoalProgress />
         <LiveWebinar />
+        <GoalProgress />
       </div>
     </div>
   );
