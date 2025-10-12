@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, HeartPulse, Trash2, Droplet, Dumbbell, Star } from 'lucide-react';
+import { ArrowLeft, HeartPulse, Trash2, Droplet, Dumbbell, Star, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useLocalStorageState } from '@/hooks/use-local-storage-state';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
