@@ -44,18 +44,18 @@ const getTaskIcon = (title: string) => {
     return taskIcons[title as keyof typeof taskIcons] || taskIcons.default;
 }
 
-const getTaskColor = (title: string) => {
+const getTaskColorGradient = (title: string) => {
     switch (title) {
         case 'Take the dog for a walk':
-            return 'bg-rose-500';
+            return 'from-rose-400 to-rose-600';
         case 'Go to the Cult Fit Classes':
-            return 'bg-blue-500';
+            return 'from-blue-400 to-blue-600';
         case 'Conduct Project Review meeting':
-            return 'bg-rose-500';
+            return 'from-purple-400 to-purple-600';
         case 'Coffee with Clients at Barista':
-            return 'bg-gray-400';
+            return 'from-gray-400 to-gray-600';
         default:
-            return 'bg-rose-500';
+            return 'from-orange-400 to-orange-600';
     }
 }
 
@@ -77,34 +77,34 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
   }
 
   return (
-    <Card>
+    <Card className="glass-card text-white border-white/20">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-headline text-lg flex items-center">
-            September <span className="text-pink-500 ml-2">2021</span>
+          <CardTitle className="font-headline text-lg flex items-center text-white">
+            Daily Schedule
           </CardTitle>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-gray-300">
             {format(today, 'dd MMMM, yyyy')}
           </span>
         </div>
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
             {week.map((day) => (
               <div key={day.toString()} className="text-center">
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-gray-300">
                   {format(day, 'EEE')}
                 </span>
                 <Button
                   variant={isSameDay(day, today) ? 'default' : 'ghost'}
                   className={cn(
-                    'w-10 h-10 rounded-full flex flex-col p-0',
+                    'w-10 h-10 rounded-full flex flex-col p-0 text-white hover:bg-white/10',
                     isSameDay(day, today) &&
-                      'bg-primary text-primary-foreground'
+                      'bg-blue-500 text-white'
                   )}
                 >
                   <span className="text-md">{format(day, 'd')}</span>
@@ -112,7 +112,7 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
               </div>
             ))}
           </div>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
@@ -124,33 +124,37 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
             const duration = differenceInMinutes(endTime, startTime);
 
             return (
-              <div key={task.id} className="flex items-start gap-4 mb-4">
+              <div
+                key={task.id}
+                className="flex items-start gap-4 mb-4 animate-fade-in animate-bounce-hover"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 {/* Timeline */}
                 <div className="flex flex-col items-center w-16">
-                  <span className="text-sm font-semibold text-muted-foreground">
+                  <span className="text-sm font-semibold text-gray-300">
                     {format(startTime, 'h:mm a')}
                   </span>
-                   <div className="flex-1 w-px bg-gray-300 my-2"></div>
+                   <div className="flex-1 w-px bg-white/20 my-2"></div>
                 </div>
 
                 {/* Task details */}
                 <div className="flex-1 relative">
                     <div className="absolute -left-7 top-0">
-                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white", getTaskColor(task.title))}>
+                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg bg-gradient-to-br", getTaskColorGradient(task.title))}>
                             {getTaskIcon(task.title)}
                         </div>
                     </div>
                   <div className="pl-4">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-gray-300">
                         {format(startTime, 'h:mm a')} - {format(endTime, 'h:mm a')} ({duration} min)
                     </p>
-                    <p className="font-semibold text-lg">{task.title}</p>
+                    <p className="font-semibold text-lg text-white">{task.title}</p>
                     <div className="flex items-center justify-between">
-                        <Badge variant="outline">{task.completed ? '3/3' : '2/5'}</Badge>
+                        <Badge variant="outline" className="text-gray-300 border-gray-500">{task.completed ? '3/3' : '2/5'}</Badge>
                         {task.completed ? (
-                            <CheckCircle2 className="h-5 w-5 text-blue-500" />
+                            <CheckCircle2 className="h-5 w-5 text-blue-400" />
                         ): (
-                            <Circle className="h-5 w-5 text-rose-500" />
+                            <Circle className="h-5 w-5 text-pink-400" />
                         )}
                     </div>
                   </div>
@@ -160,7 +164,7 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
           })}
 
           <div className="absolute right-0 -bottom-4">
-              <Button className="rounded-full w-12 h-12 bg-rose-500 hover:bg-rose-600 shadow-lg">
+              <Button className="rounded-full w-12 h-12 bg-gradient-to-br from-pink-500 to-orange-500 hover:scale-110 transition-transform shadow-lg">
                 <Plus className="h-6 w-6" />
               </Button>
           </div>

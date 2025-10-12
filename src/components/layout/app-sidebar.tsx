@@ -32,14 +32,14 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset">
       <SidebarHeader>
         <Link
           href="/dashboard"
           className="flex items-center gap-2 font-semibold text-lg"
         >
           <Icons.logo className="h-6 w-6 text-primary" />
-          <span className="font-headline">PlanVerse</span>
+          <span className="font-headline text-white">PlanVerse</span>
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -48,12 +48,12 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
-                tooltip={{ children: item.label }}
+                isActive={pathname.startsWith(item.href)}
+                tooltip={{ children: item.label, className: "bg-gray-800 text-white border-gray-700" }}
               >
                 <Link href={item.href}>
                   <item.icon />
-                  <span>{item.label}</span>
+                  <span className="text-white">{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
