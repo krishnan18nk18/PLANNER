@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,9 @@ import {
   Users,
   Plane,
   ClipboardList,
+  Mic,
+  MicOff,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -25,6 +28,8 @@ import { TaskForm } from './task-form';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '../ui/badge';
 import { formatDate } from '@/lib/utils';
+import { createTaskFromVoice } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 const getIconForTask = (title: string) => {
   const lowerCaseTitle = title.toLowerCase();
@@ -44,6 +49,63 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
+
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.onstart = () => {
+        setIsListening(true);
+        toast({ title: 'Listening...', description: 'Speak your task command.' });
+      };
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+      recognitionRef.current.onresult = async (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setIsListening(false);
+        setIsProcessing(true);
+        toast({ title: 'Processing...', description: 'Understanding your command.' });
+
+        const result = await createTaskFromVoice(transcript);
+
+        setIsProcessing(false);
+        if (result.error || !result.task) {
+          toast({ variant: 'destructive', title: 'Error', description: result.error || 'Could not create task.' });
+        } else {
+          setTasks(prevTasks => [...prevTasks, result.task!].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+          toast({ variant: 'default', title: 'Task Added', description: `Added "${result.task.title}" to your journey.` });
+        }
+      };
+      recognitionRef.current.onerror = (event: any) => {
+        setIsListening(false);
+        setIsProcessing(false);
+        toast({ variant: 'destructive', title: 'Voice Error', description: event.error });
+      };
+    } else {
+        // Speech recognition not supported
+    }
+  }, [toast]);
+
+
+  const handleVoiceButtonClick = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else if (recognitionRef.current) {
+      recognitionRef.current.start();
+    } else {
+        toast({ variant: 'destructive', title: 'Not Supported', description: 'Speech recognition is not supported in your browser.' });
+    }
+  };
+
 
   const handleAddTask = (taskData: Omit<Task, 'id' | 'completed'>) => {
     const newTasks = [
@@ -175,7 +237,18 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
         </div>
       </div>
 
-      <div className="fixed bottom-8 right-8 z-50">
+      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-4">
+        <Button
+          onClick={handleVoiceButtonClick}
+          disabled={isProcessing}
+          className={cn(
+            "rounded-full w-16 h-16 bg-gradient-to-br from-pink-500 to-orange-500 hover:scale-110 transition-transform shadow-lg text-white",
+            isListening && "animate-pulse border-4 border-pink-300",
+            isProcessing && "cursor-not-allowed"
+          )}
+        >
+          {isProcessing ? <Loader2 className="h-8 w-8 animate-spin" /> : (isListening ? <MicOff className="h-8 w-8" /> : <Mic className="h-8 w-8" />)}
+        </Button>
         <Button
           onClick={openNewSheet}
           className="rounded-full w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 hover:scale-110 transition-transform shadow-lg text-white animate-float"
