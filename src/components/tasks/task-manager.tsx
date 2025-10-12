@@ -3,13 +3,42 @@
 import { useState } from 'react';
 import type { Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Plus, Check, Edit, Trash2 } from 'lucide-react';
+import {
+  MoreHorizontal,
+  Plus,
+  Check,
+  Edit,
+  Trash2,
+  Dog,
+  Dumbbell,
+  Briefcase,
+  Coffee,
+  FileText,
+  Palette,
+  Users,
+  Plane,
+  ClipboardList,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { TaskForm } from './task-form';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '../ui/badge';
 import { formatDate } from '@/lib/utils';
+
+const getIconForTask = (title: string) => {
+  const lowerCaseTitle = title.toLowerCase();
+  if (lowerCaseTitle.includes('dog')) return <Dog className="h-6 w-6" />;
+  if (lowerCaseTitle.includes('fit') || lowerCaseTitle.includes('workout')) return <Dumbbell className="h-6 w-6" />;
+  if (lowerCaseTitle.includes('meeting') || lowerCaseTitle.includes('review')) return <Users className="h-6 w-6" />;
+  if (lowerCaseTitle.includes('coffee')) return <Coffee className="h-6 w-6" />;
+  if (lowerCaseTitle.includes('report')) return <FileText className="h-6 w-6" />;
+  if (lowerCaseTitle.includes('design')) return <Palette className="h-6 w-6" />;
+  if (lowerCaseTitle.includes('brainstorming')) return <Users className="h-6 w-6" />;
+  if (lowerCaseTitle.includes('flights') || lowerCaseTitle.includes('travel')) return <Plane className="h-6 w-6" />;
+  return <ClipboardList className="h-6 w-6" />;
+};
+
 
 export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
@@ -99,9 +128,14 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
                             onClick={() => openEditSheet(task)}
                         >
                             <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="font-bold text-lg">{task.title}</p>
-                                    <p className="text-sm text-white/80">{formatDate(task.dueDate)}</p>
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 bg-white/20 rounded-lg">
+                                    {getIconForTask(task.title)}
+                                  </div>
+                                  <div>
+                                      <p className="font-bold text-lg">{task.title}</p>
+                                      <p className="text-sm text-white/80">{formatDate(task.dueDate)}</p>
+                                  </div>
                                 </div>
                                 <Badge variant={task.completed ? 'default' : priorityBadge[task.priority]} className={cn(task.completed && 'bg-green-600')}>{task.priority}</Badge>
                             </div>
@@ -154,6 +188,9 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
         <SheetContent className="glass-card text-card-foreground border-border/20">
           <SheetHeader>
             <SheetTitle className="font-headline text-2xl">{editingTask ? 'Edit Task' : 'Add New Task'}</SheetTitle>
+            <SheetDescription className="sr-only">
+              {editingTask ? 'Edit your existing task.' : 'Add a new task to your list.'}
+            </SheetDescription>
           </SheetHeader>
           <div className="mt-4">
             <TaskForm
