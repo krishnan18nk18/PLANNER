@@ -43,6 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { createPortal } from 'react-dom';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 
 const initialPlannerTypes = [
   { id: '1', title: 'Daily Planner', description: 'Organize your day with a detailed to-do list.', icon: CheckCircle, href: '/tasks', gradient: 'from-blue-400 to-blue-600', hasToggle: true },
@@ -64,7 +65,7 @@ const initialPlannerTypes = [
 
 type PlannerType = typeof initialPlannerTypes[0] & { enabled?: boolean };
 
-function SortablePlannerCard({ planner, onToggle, ...props }: { planner: PlannerType; onToggle: (id: string, enabled: boolean) => void; }) {
+function SortablePlannerCard({ planner, onToggle }: { planner: PlannerType; onToggle: (id: string, enabled: boolean) => void; }) {
   const {
     attributes,
     listeners,
@@ -82,22 +83,14 @@ function SortablePlannerCard({ planner, onToggle, ...props }: { planner: Planner
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <PlannerCard planner={planner} onToggle={onToggle} />
+    <div ref={setNodeRef} style={style}>
+      <PlannerCard planner={planner} onToggle={onToggle} dragAttributes={attributes} dragListeners={listeners} />
     </div>
   );
 }
 
-function PlannerCard({ planner, onToggle }: { planner: PlannerType; onToggle?: (id: string, enabled: boolean) => void; }) {
+function PlannerCard({ planner, onToggle, dragAttributes, dragListeners }: { planner: PlannerType; onToggle?: (id: string, enabled: boolean) => void; dragAttributes?: any; dragListeners?: any; }) {
     const isEnabled = planner.enabled ?? true;
-
-    const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (onToggle) {
-          onToggle(planner.id, !isEnabled);
-        }
-    }
 
     return (
         <div
@@ -113,12 +106,11 @@ function PlannerCard({ planner, onToggle }: { planner: PlannerType; onToggle?: (
                 <Switch
                     checked={isEnabled}
                     onCheckedChange={(checked) => onToggle(planner.id, checked)}
-                    onClick={(e) => e.stopPropagation()}
                 />
             </div>
         )}
-        <Link href={isEnabled ? planner.href : '#'} className={cn("block h-full", !isEnabled && "pointer-events-none")}>
-          <Card className="bg-transparent border-none h-full flex flex-col cursor-grab">
+        
+          <Card className="bg-transparent border-none h-full flex flex-col cursor-grab" {...dragAttributes} {...dragListeners}>
             <CardHeader>
               <div className="flex items-center gap-4 mb-2">
                 <div className="p-3 bg-white/20 rounded-lg">
@@ -130,11 +122,16 @@ function PlannerCard({ planner, onToggle }: { planner: PlannerType; onToggle?: (
             </CardHeader>
             <CardContent className="flex-grow flex items-end">
               <div className="w-full flex justify-end">
-                  {isEnabled && <ArrowRight className="h-6 w-6" />}
+                  {isEnabled && (
+                     <Button asChild variant="ghost" className="bg-white/20 hover:bg-white/30 rounded-full w-12 h-12">
+                        <Link href={planner.href} className="cursor-pointer">
+                            <ArrowRight className="h-6 w-6 text-white" />
+                        </Link>
+                    </Button>
+                  )}
               </div>
             </CardContent>
           </Card>
-        </Link>
       </div>
     )
 }
@@ -264,3 +261,5 @@ export default function PlannersPage() {
     </div>
   );
 }
+
+    

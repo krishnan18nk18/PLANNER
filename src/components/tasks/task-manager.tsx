@@ -45,8 +45,8 @@ const getIconForTask = (title: string) => {
 };
 
 
-export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+export function TaskManager({ initialTasks, setTasks }: { initialTasks: Task[]; setTasks: React.Dispatch<React.SetStateAction<Task[]>> }) {
+  const [tasks, setLocalTasks] = useState<Task[]>(initialTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
@@ -54,6 +54,10 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setLocalTasks(initialTasks.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+  }, [initialTasks]);
 
   useEffect(() => {
     // @ts-ignore
@@ -93,7 +97,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
     } else {
         // Speech recognition not supported
     }
-  }, [toast]);
+  }, [toast, setTasks]);
 
 
   const handleVoiceButtonClick = () => {
@@ -261,7 +265,7 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
         <SheetContent className="glass-card text-card-foreground border-border/20">
           <SheetHeader>
             <SheetTitle className="font-headline text-2xl">{editingTask ? 'Edit Task' : 'Add New Task'}</SheetTitle>
-            <SheetDescription className="sr-only">
+            <SheetDescription>
               {editingTask ? 'Edit your existing task.' : 'Add a new task to your list.'}
             </SheetDescription>
           </SheetHeader>
@@ -276,3 +280,5 @@ export function TaskManager({ initialTasks }: { initialTasks: Task[] }) {
     </>
   );
 }
+
+    

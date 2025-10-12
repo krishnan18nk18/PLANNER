@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Metadata } from 'next';
+import type { Task } from '@/lib/types';
 import { initialTasks } from '@/lib/data';
 import { CommandCentreSearch } from '@/components/dashboard/command-centre-search';
 import { FloatingNotes } from '@/components/dashboard/floating-notes';
@@ -34,6 +34,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { TaskForm } from '@/components/tasks/task-form';
+
 
 const componentMap = {
   FloatingNotes,
@@ -79,8 +82,8 @@ const SortableItem = ({ id, children }: { id: string; children: React.ReactNode 
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className={cn(isDragging && "opacity-50", "relative group")}>
-      <div className="absolute top-2 right-2 p-2 bg-black/20 rounded-full text-white cursor-grab opacity-0 group-hover:opacity-100 transition-opacity z-20">
+    <div ref={setNodeRef} style={style} className={cn(isDragging && "opacity-50", "relative group")}>
+      <div {...attributes} {...listeners} className="absolute top-2 right-2 p-2 bg-black/20 rounded-full text-white cursor-grab opacity-0 group-hover:opacity-100 transition-opacity z-20">
         <LayoutDashboard className="h-4 w-4" />
       </div>
       {children}
@@ -91,8 +94,11 @@ const SortableItem = ({ id, children }: { id: string; children: React.ReactNode 
 
 export default function DashboardPage() {
     const { toast } = useToast();
+    const [tasks, setTasks] = useState<Task[]>(initialTasks);
     const [componentOrder, setComponentOrder] = useState<ComponentKey[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
     useEffect(() => {
         try {
@@ -110,6 +116,28 @@ export default function DashboardPage() {
         }
     }, []);
 
+    const handleAddTask = (taskData: Omit<Task, 'id' | 'completed'>) => {
+      const newTasks = [
+        ...tasks,
+        { ...taskData, id: Date.now().toString(), completed: false },
+      ].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+      setTasks(newTasks);
+      setIsSheetOpen(false);
+    };
+
+    const handleUpdateTask = (updatedTask: Task) => {
+      const newTasks = tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+      setTasks(newTasks);
+      setIsSheetOpen(false);
+      setEditingTask(undefined);
+    };
+
+    const openNewSheet = () => {
+      setEditingTask(undefined);
+      setIsSheetOpen(true);
+    };
+
     const dailyTasks = [
         { id: '1', title: 'Take the dog for a walk', description: 'Ensure you scoop the poop and take 4 rounds around the apartments. Then serve the food.', dueDate: '2024-03-12T07:00:00', completed: true, priority: 'Medium' },
         { id: '2', title: 'Go to the Cult Fit Classes', description: 'Do legs and triceps with the coach and group', dueDate: '2024-03-12T08:00:00', completed: false, priority: 'High' },
@@ -117,20 +145,20 @@ export default function DashboardPage() {
         { id: '4', title: 'Coffee with Clients at Barista', description: 'Greet new client with a coffee at nearby barista from 10:00 to 10:30', dueDate: '2024-03-12T10:00:00', completed: false, priority: 'Medium' },
       ];
 
-  const highPriorityTasks = initialTasks.filter(t => t.priority === 'High');
-  const mediumPriorityTasks = initialTasks.filter(t => t.priority === 'Medium');
-  const lowPriorityTasks = initialTasks.filter(t => t.priority === 'Low');
+  const highPriorityTasks = tasks.filter(t => t.priority === 'High');
+  const mediumPriorityTasks = tasks.filter(t => t.priority === 'Medium');
+  const lowPriorityTasks = tasks.filter(t => t.priority === 'Low');
 
   const componentProps: Record<ComponentKey, any> = {
     FloatingNotes: {},
-    TaskAnalytics: { tasks: initialTasks },
+    TaskAnalytics: { tasks: tasks },
     PriorityTaskColumns: { 
         highPriorityTasks,
         mediumPriorityTasks,
         lowPriorityTasks,
     },
     DailySchedule: { tasks: dailyTasks },
-    LiveActivities: { tasks: initialTasks },
+    LiveActivities: { tasks: tasks },
   };
 
   const sensors = useSensors(
@@ -179,46 +207,67 @@ export default function DashboardPage() {
   const activeComponent = activeId ? dashboardComponents[activeId as ComponentKey] : null;
 
   return (
-    <div className="space-y-8 animate-fade-in">
-        <div className="flex justify-between items-center">
-            <CommandCentreSearch />
-            <Button onClick={resetLayout} variant="outline">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Reset Layout
-            </Button>
-        </div>
+    <>
+      <div className="space-y-8 animate-fade-in">
+          <div className="flex justify-between items-center">
+              <CommandCentreSearch onAddTask={openNewSheet} />
+              <Button onClick={resetLayout} variant="outline">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Reset Layout
+              </Button>
+          </div>
 
-        <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
-        >
-            <SortableContext items={componentOrder} strategy={verticalListSortingStrategy}>
-                <div className="space-y-8">
-                    {componentOrder.map((id) => {
-                        const Component = dashboardComponents[id].component;
-                        return (
-                            <SortableItem key={id} id={id}>
-                                <Component {...componentProps[id]} />
-                            </SortableItem>
-                        );
-                    })}
-                </div>
-            </SortableContext>
+          <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+          >
+              <SortableContext items={componentOrder} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-8">
+                      {componentOrder.map((id) => {
+                          const Component = dashboardComponents[id].component;
+                          return (
+                              <SortableItem key={id} id={id}>
+                                  <Component {...componentProps[id]} />
+                              </SortableItem>
+                          );
+                      })}
+                  </div>
+              </SortableContext>
 
-             {typeof document !== 'undefined' && createPortal(
-                <DragOverlay>
-                    {activeComponent ? (
-                        <div className="rounded-2xl shadow-2xl scale-105 transform ring-4 ring-primary glow">
-                            <activeComponent.component {...componentProps[activeId as ComponentKey]} />
-                        </div>
-                    ) : null}
-                </DragOverlay>,
-                document.body
-            )}
-        </DndContext>
-    </div>
+              {typeof document !== 'undefined' && createPortal(
+                  <DragOverlay>
+                      {activeComponent ? (
+                          <div className="rounded-2xl shadow-2xl scale-105 transform ring-4 ring-primary glow">
+                              <activeComponent.component {...componentProps[activeId as ComponentKey]} />
+                          </div>
+                      ) : null}
+                  </DragOverlay>,
+                  document.body
+              )}
+          </DndContext>
+      </div>
+
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="glass-card text-card-foreground border-border/20">
+          <SheetHeader>
+            <SheetTitle className="font-headline text-2xl">{editingTask ? 'Edit Task' : 'Add New Task'}</SheetTitle>
+            <SheetDescription>
+              {editingTask ? 'Edit your existing task.' : 'Add a new task to your list.'}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            <TaskForm
+              onSubmit={editingTask ? handleUpdateTask : handleAddTask}
+              task={editingTask}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
+
+    
