@@ -1,15 +1,19 @@
 
 'use client';
 
+import * as React from 'react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Utensils, Trash2, Plus, Star } from 'lucide-react';
+import { ArrowLeft, Utensils, Trash2, Plus, Star, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useLocalStorageState } from '@/hooks/use-local-storage-state';
+import { useDoc, useUser, useFirestore } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import { Droplet } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,42 +30,73 @@ const initialMacros = { protein: 120, carbs: 200, fat: 60 };
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
+const initialPlannerState = {
+    menu: initialMenu,
+    groceries: initialGroceries,
+    waterIntake: 0,
+    macros: initialMacros,
+    recipes: [{id: 1, name: 'Grilled Chicken Salad', prepTime: 20, rating: 4}]
+}
+
 export default function MealPlannerPage() {
   const { toast } = useToast();
-  const [menu, setMenu] = useLocalStorageState('mealPlanner_menu_v2', initialMenu);
-  const [groceries, setGroceries] = useLocalStorageState('mealPlanner_groceries_v2', initialGroceries);
-  const [waterIntake, setWaterIntake] = useLocalStorageState('mealPlanner_water_v2', 0);
-  const [macros, setMacros] = useLocalStorageState('mealPlanner_macros_v2', initialMacros);
-  const [recipes, setRecipes] = useLocalStorageState('mealPlanner_recipes_v2', [{id: 1, name: 'Grilled Chicken Salad', prepTime: 20, rating: 4}]);
+  const { user } = useUser();
+  const { db } = useFirestore();
 
+  const plannerPath = user ? `users/${user.uid}/planners/meal` : null;
+  const { data: plannerData, loading } = useDoc<typeof initialPlannerState>(plannerPath);
+
+  const plannerState = plannerData || initialPlannerState;
+  
   const handleSave = () => {
-    toast({
-      title: 'Meal Planner Saved!',
-      description: 'Your meal plan has been updated.',
-    });
+    if (!db || !user) return;
+    const docRef = doc(db, plannerPath!);
+    setDoc(docRef, plannerState, { merge: true })
+      .then(() => {
+        toast({
+          title: 'Meal Planner Saved!',
+          description: 'Your meal plan has been updated.',
+        });
+      })
+      .catch((err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({path: docRef.path, operation: 'write', requestResourceData: plannerState}));
+      });
+  };
+
+  const updatePlanner = (data: Partial<typeof initialPlannerState>) => {
+    if (!db || !user) return;
+    const docRef = doc(db, plannerPath!);
+    setDoc(docRef, data, { merge: true })
+      .catch((err) => {
+         errorEmitter.emit('permission-error', new FirestorePermissionError({path: docRef.path, operation: 'write', requestResourceData: data}));
+      });
   };
 
   const addGroceryItem = () => {
-    setGroceries([...groceries, { id: Date.now(), name: '', category: 'Misc', acquired: false }]);
+    updatePlanner({ groceries: [...plannerState.groceries, { id: Date.now(), name: '', category: 'Misc', acquired: false }]});
   };
   
   const removeGroceryItem = (id: number) => {
-    setGroceries(groceries.filter(item => item.id !== id));
+    updatePlanner({ groceries: plannerState.groceries.filter(item => item.id !== id) });
   };
   
   const addRecipe = () => {
-    setRecipes([...recipes, { id: Date.now(), name: 'New Recipe', prepTime: 0, rating: 0 }]);
+    updatePlanner({ recipes: [...plannerState.recipes, { id: Date.now(), name: 'New Recipe', prepTime: 0, rating: 0 }]});
   };
 
   const removeRecipe = (id: number) => {
-    setRecipes(recipes.filter(r => r.id !== id));
+    updatePlanner({ recipes: plannerState.recipes.filter(r => r.id !== id) });
   };
   
   const macroChartData = [
-      { name: 'Protein', value: macros.protein },
-      { name: 'Carbs', value: macros.carbs },
-      { name: 'Fat', value: macros.fat },
+      { name: 'Protein', value: plannerState.macros.protein },
+      { name: 'Carbs', value: plannerState.macros.carbs },
+      { name: 'Fat', value: plannerState.macros.fat },
   ];
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-full"><Loader2 className="h-12 w-12 animate-spin" /></div>
+  }
 
   return (
     <div className="space-y-6 animate-fade-in p-4 sm:p-6 lg:p-8">
@@ -88,11 +123,11 @@ export default function MealPlannerPage() {
                 {days.map((day, dayIndex) => (
                   <Textarea
                     key={`${day}-${meal}`}
-                    value={menu[dayIndex][mealIndex]}
+                    value={plannerState.menu[dayIndex][mealIndex]}
                     onChange={(e) => {
-                      const newMenu = [...menu];
+                      const newMenu = [...plannerState.menu];
                       newMenu[dayIndex][mealIndex] = e.target.value;
-                      setMenu(newMenu);
+                      updatePlanner({ menu: newMenu });
                     }}
                     className="h-24 text-xs p-1 bg-white/10"
                     placeholder="Meal details..."
@@ -108,11 +143,11 @@ export default function MealPlannerPage() {
         <Card className="glass-card lg:col-span-2">
             <CardHeader><CardTitle>Grocery List</CardTitle></CardHeader>
             <CardContent className="max-h-96 overflow-y-auto">
-                {groceries.map(item => (
+                {plannerState.groceries.map(item => (
                     <div key={item.id} className="flex items-center gap-2 mb-2 p-2 rounded-lg bg-white/10">
-                        <Checkbox checked={item.acquired} onCheckedChange={checked => setGroceries(groceries.map(g => g.id === item.id ? {...g, acquired: !!checked} : g))} />
-                        <Input value={item.name} onChange={e => setGroceries(groceries.map(g => g.id === item.id ? {...g, name: e.target.value} : g))} placeholder="Item name" className="flex-grow bg-transparent" />
-                        <Input value={item.category} onChange={e => setGroceries(groceries.map(g => g.id === item.id ? {...g, category: e.target.value} : g))} placeholder="Category" className="w-32 bg-transparent" />
+                        <Checkbox checked={item.acquired} onCheckedChange={checked => updatePlanner({ groceries: plannerState.groceries.map(g => g.id === item.id ? {...g, acquired: !!checked} : g)})} />
+                        <Input value={item.name} onChange={e => updatePlanner({ groceries: plannerState.groceries.map(g => g.id === item.id ? {...g, name: e.target.value} : g)})} placeholder="Item name" className="flex-grow bg-transparent" />
+                        <Input value={item.category} onChange={e => updatePlanner({ groceries: plannerState.groceries.map(g => g.id === item.id ? {...g, category: e.target.value} : g)})} placeholder="Category" className="w-32 bg-transparent" />
                         <Button variant="ghost" size="icon" onClick={() => removeGroceryItem(item.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
                 ))}
@@ -126,8 +161,8 @@ export default function MealPlannerPage() {
                     {Array.from({ length: 8 }).map((_, i) => (
                         <Droplet
                             key={i}
-                            className={`h-10 w-10 cursor-pointer transition-colors ${i < waterIntake ? 'text-blue-400 fill-current' : 'text-gray-500'}`}
-                            onClick={() => setWaterIntake(i + 1)}
+                            className={`h-10 w-10 cursor-pointer transition-colors ${i < plannerState.waterIntake ? 'text-blue-400 fill-current' : 'text-gray-500'}`}
+                            onClick={() => updatePlanner({ waterIntake: i + 1 })}
                         />
                     ))}
                 </CardContent>
@@ -149,10 +184,10 @@ export default function MealPlannerPage() {
        <Card className="glass-card">
           <CardHeader><CardTitle>Favorite Recipes</CardTitle></CardHeader>
           <CardContent>
-            {recipes.map(recipe => (
+            {plannerState.recipes.map(recipe => (
               <div key={recipe.id} className="grid grid-cols-4 items-center gap-2 mb-2 p-2 rounded-lg bg-white/10">
-                <Input value={recipe.name} onChange={e => setRecipes(recipes.map(r => r.id === recipe.id ? {...r, name: e.target.value} : r))} placeholder="Recipe Name" className="bg-transparent col-span-2" />
-                 <Input type="number" value={recipe.prepTime} onChange={e => setRecipes(recipes.map(r => r.id === recipe.id ? {...r, prepTime: +e.target.value} : r))} placeholder="Prep time (min)" className="bg-transparent" />
+                <Input value={recipe.name} onChange={e => updatePlanner({ recipes: plannerState.recipes.map(r => r.id === recipe.id ? {...r, name: e.target.value} : r) })} placeholder="Recipe Name" className="bg-transparent col-span-2" />
+                 <Input type="number" value={recipe.prepTime} onChange={e => updatePlanner({ recipes: plannerState.recipes.map(r => r.id === recipe.id ? {...r, prepTime: +e.target.value} : r) })} placeholder="Prep time (min)" className="bg-transparent" />
                 <Button variant="ghost" size="icon" onClick={() => removeRecipe(recipe.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
               </div>
             ))}
@@ -168,5 +203,3 @@ export default function MealPlannerPage() {
     </div>
   );
 }
-
-    
