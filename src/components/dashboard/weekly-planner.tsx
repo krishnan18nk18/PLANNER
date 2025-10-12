@@ -42,17 +42,17 @@ const pinnedNotes = [
 
 export function WeeklyPlanner() {
   return (
-    <Card className="glass-card text-white border-white/20">
+    <Card className="glass-card text-card-foreground border-border/20">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-headline text-lg text-white">Taskfly</CardTitle>
+          <CardTitle className="font-headline text-lg">Taskfly</CardTitle>
         </div>
         <Tabs defaultValue="personal" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-2 bg-white/10">
-            <TabsTrigger value="personal" className='data-[state=active]:bg-pink-500/50 data-[state=active]:text-white'>
+          <TabsList className="grid w-full grid-cols-2 dark:bg-white/10 bg-black/5">
+            <TabsTrigger value="personal" className='data-[state=active]:bg-pink-500/80 data-[state=active]:text-white'>
               <span className="font-bold text-xl mr-2">3</span> Personal
             </TabsTrigger>
-            <TabsTrigger value="official" className='data-[state=active]:bg-blue-500/50 data-[state=active]:text-white'>
+            <TabsTrigger value="official" className='data-[state=active]:bg-blue-500/80 data-[state=active]:text-white'>
               <span className="font-bold text-xl mr-2">4</span> Official
             </TabsTrigger>
           </TabsList>
@@ -63,13 +63,13 @@ export function WeeklyPlanner() {
           <TabsList className="w-full flex justify-start bg-transparent p-0">
             <TabsTrigger
               value="weekly"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none text-gray-300"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none text-muted-foreground"
             >
               Weekly
             </TabsTrigger>
             <TabsTrigger
               value="pinned"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none text-gray-300"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none text-muted-foreground"
             >
               Pinned Notes
             </TabsTrigger>
@@ -81,7 +81,7 @@ export function WeeklyPlanner() {
             <div
               key={note.id}
               className={cn(
-                'glass-card p-4 flex items-center gap-4 animate-float hover:scale-105 transform transition-all duration-300 rounded-2xl bg-gradient-to-r text-white shadow-lg hover:shadow-xl',
+                'p-4 flex items-center gap-4 animate-float hover:scale-105 transform transition-all duration-300 rounded-2xl bg-gradient-to-r text-white shadow-lg hover:shadow-xl',
                 note.color
               )}
               style={{ animationDelay: note.delay }}
@@ -94,35 +94,35 @@ export function WeeklyPlanner() {
           ))}
         </div>
 
-        <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
-          <h4 className="font-semibold mb-4 text-white">Add New Task</h4>
+        <div className="mt-6 p-4 dark:bg-white/5 bg-black/5 rounded-lg border border-border/10">
+          <h4 className="font-semibold mb-4">Add New Task</h4>
           <div className="space-y-4">
             <div>
               <Label htmlFor="title" className="sr-only">Title</Label>
-              <Input id="title" placeholder="Title" className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"/>
+              <Input id="title" placeholder="Title" className="dark:bg-white/10 bg-white/80 border-border/20 placeholder:text-muted-foreground"/>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Input type="text" placeholder="24/06/20" className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"/>
-              <Input type="text" placeholder="9:00 AM" className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"/>
+              <Input type="text" placeholder="24/06/20" className="dark:bg-white/10 bg-white/80 border-border/20 placeholder:text-muted-foreground"/>
+              <Input type="text" placeholder="9:00 AM" className="dark:bg-white/10 bg-white/80 border-border/20 placeholder:text-muted-foreground"/>
             </div>
              <div className="grid grid-cols-2 gap-4">
-              <Input type="text" placeholder="24/06/20" className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"/>
-              <Input type="text" placeholder="11:00 AM" className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"/>
+              <Input type="text" placeholder="24/06/20" className="dark:bg-white/10 bg-white/80 border-border/20 placeholder:text-muted-foreground"/>
+              <Input type="text" placeholder="11:00 AM" className="dark:bg-white/10 bg-white/80 border-border/20 placeholder:text-muted-foreground"/>
             </div>
             <Select>
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
+              <SelectTrigger className="dark:bg-white/10 bg-white/80 border-border/20">
                 <SelectValue placeholder="Does not Repeat" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 text-white border-gray-700">
+              <SelectContent>
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>
               </SelectContent>
             </Select>
-             <Textarea placeholder="Add Note" className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"/>
+             <Textarea placeholder="Add Note" className="dark:bg-white/10 bg-white/80 border-border/20 placeholder:text-muted-foreground"/>
             <div className="flex justify-end gap-2">
-                <Button variant="ghost" className="text-white hover:bg-white/10">Cancel</Button>
-                <Button className="bg-blue-500 hover:bg-blue-600">Save</Button>
+                <Button variant="ghost">Cancel</Button>
+                <Button className="bg-blue-500 hover:bg-blue-600 text-white">Save</Button>
             </div>
           </div>
         </div>

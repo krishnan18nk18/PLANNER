@@ -8,7 +8,10 @@ import {
   Sparkles,
   Calendar,
   BookMarked,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 import {
   Sidebar,
@@ -17,8 +20,10 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Icons } from '../icons';
+import { Button } from '../ui/button';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -30,6 +35,7 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
 
   return (
     <Sidebar variant="inset">
@@ -39,7 +45,7 @@ export function AppSidebar() {
           className="flex items-center gap-2 font-semibold text-lg"
         >
           <Icons.logo className="h-6 w-6 text-primary" />
-          <span className="font-headline text-white">PlanVerse</span>
+          <span className="font-headline text-sidebar-foreground">PlanVerse</span>
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -49,17 +55,31 @@ export function AppSidebar() {
               <SidebarMenuButton
                 asChild
                 isActive={pathname.startsWith(item.href)}
-                tooltip={{ children: item.label, className: "bg-gray-800 text-white border-gray-700" }}
+                tooltip={{ children: item.label }}
               >
                 <Link href={item.href}>
                   <item.icon />
-                  <span className="text-white">{item.label}</span>
+                  <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter>
+        <div className="flex justify-center p-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              className="rounded-full text-sidebar-foreground hover:bg-sidebar-accent"
+              aria-label="Toggle theme"
+            >
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </Button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

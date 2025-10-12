@@ -48,8 +48,8 @@ export default function PlannersPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight font-headline text-white">Planners</h1>
-        <p className="text-gray-300">
+        <h1 className="text-3xl font-bold tracking-tight font-headline">Planners</h1>
+        <p className="text-muted-foreground">
           Choose a planner to get started with organizing your life.
         </p>
       </div>
@@ -59,13 +59,13 @@ export default function PlannersPage() {
           <div
             key={planner.title}
             className={cn(
-              'rounded-2xl bg-gradient-to-br shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 transform animate-fade-in',
+              'rounded-2xl bg-gradient-to-br shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 transform animate-fade-in text-white',
               planner.gradient
             )}
             style={{ animationDelay: `${i * 50}ms` }}
           >
             <Link href={planner.href} className="block h-full">
-              <Card className="bg-transparent border-none text-white h-full flex flex-col">
+              <Card className="bg-transparent border-none h-full flex flex-col">
                 <CardHeader>
                   <div className="flex items-center gap-4 mb-2">
                     <div className="p-3 bg-white/20 rounded-lg">

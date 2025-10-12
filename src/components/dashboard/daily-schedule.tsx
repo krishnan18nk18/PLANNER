@@ -77,34 +77,34 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
   }
 
   return (
-    <Card className="glass-card text-white border-white/20">
+    <Card className="glass-card text-card-foreground border-border/20">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-headline text-lg flex items-center text-white">
+          <CardTitle className="font-headline text-lg flex items-center">
             Daily Schedule
           </CardTitle>
-          <span className="text-sm text-gray-300">
+          <span className="text-sm text-muted-foreground">
             {format(today, 'dd MMMM, yyyy')}
           </span>
         </div>
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+          <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent">
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
             {week.map((day) => (
               <div key={day.toString()} className="text-center">
-                <span className="text-xs text-gray-300">
+                <span className="text-xs text-muted-foreground">
                   {format(day, 'EEE')}
                 </span>
                 <Button
                   variant={isSameDay(day, today) ? 'default' : 'ghost'}
                   className={cn(
-                    'w-10 h-10 rounded-full flex flex-col p-0 text-white hover:bg-white/10',
+                    'w-10 h-10 rounded-full flex flex-col p-0 text-foreground hover:bg-accent',
                     isSameDay(day, today) &&
-                      'bg-blue-500 text-white'
+                      'bg-primary text-primary-foreground'
                   )}
                 >
                   <span className="text-md">{format(day, 'd')}</span>
@@ -112,7 +112,7 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
               </div>
             ))}
           </div>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+          <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent">
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
@@ -131,10 +131,10 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
               >
                 {/* Timeline */}
                 <div className="flex flex-col items-center w-16">
-                  <span className="text-sm font-semibold text-gray-300">
+                  <span className="text-sm font-semibold text-muted-foreground">
                     {format(startTime, 'h:mm a')}
                   </span>
-                   <div className="flex-1 w-px bg-white/20 my-2"></div>
+                   <div className="flex-1 w-px bg-border/50 my-2"></div>
                 </div>
 
                 {/* Task details */}
@@ -145,12 +145,12 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
                         </div>
                     </div>
                   <div className="pl-4">
-                    <p className="text-sm text-gray-300">
+                    <p className="text-sm text-muted-foreground">
                         {format(startTime, 'h:mm a')} - {format(endTime, 'h:mm a')} ({duration} min)
                     </p>
-                    <p className="font-semibold text-lg text-white">{task.title}</p>
+                    <p className="font-semibold text-lg">{task.title}</p>
                     <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-gray-300 border-gray-500">{task.completed ? '3/3' : '2/5'}</Badge>
+                        <Badge variant="outline" className="text-muted-foreground border-border/80">{task.completed ? '3/3' : '2/5'}</Badge>
                         {task.completed ? (
                             <CheckCircle2 className="h-5 w-5 text-blue-400" />
                         ): (
@@ -164,7 +164,7 @@ export function DailySchedule({ tasks }: DailyScheduleProps) {
           })}
 
           <div className="absolute right-0 -bottom-4">
-              <Button className="rounded-full w-12 h-12 bg-gradient-to-br from-pink-500 to-orange-500 hover:scale-110 transition-transform shadow-lg">
+              <Button className="rounded-full w-12 h-12 bg-gradient-to-br from-pink-500 to-orange-500 hover:scale-110 transition-transform shadow-lg text-white">
                 <Plus className="h-6 w-6" />
               </Button>
           </div>

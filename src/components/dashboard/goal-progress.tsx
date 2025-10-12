@@ -2,20 +2,24 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
 
 const data = [
   { name: 'Completed', value: 25 },
   { name: 'Remaining', value: 75 },
 ];
-const COLORS = ['#007AFF', '#FFFFFF30']; // iOS Blue and transparent white
+const LIGHT_COLORS = ['#007AFF', '#0000001A'];
+const DARK_COLORS = ['#007AFF', '#FFFFFF30'];
 
 export function GoalProgress() {
+  const { theme } = useTheme();
   const percentage = data[0].value;
+  const colors = theme === 'dark' ? DARK_COLORS : LIGHT_COLORS;
 
   return (
-    <Card className="glass-card text-white border-white/20">
+    <Card className="glass-card text-card-foreground border-border/20">
       <CardHeader>
-        <CardTitle className="font-headline text-lg text-white">Goal</CardTitle>
+        <CardTitle className="font-headline text-lg">Goal</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center">
         <div className="relative h-32 w-32">
@@ -35,7 +39,7 @@ export function GoalProgress() {
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
+                    fill={colors[index % colors.length]}
                     stroke="none"
                   />
                 ))}
@@ -43,10 +47,10 @@ export function GoalProgress() {
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl font-bold text-white">{`${percentage}%`}</span>
+            <span className="text-2xl font-bold">{`${percentage}%`}</span>
           </div>
         </div>
-        <p className="mt-2 text-sm text-gray-300">Till 10:00A.M</p>
+        <p className="mt-2 text-sm text-muted-foreground">Till 10:00A.M</p>
       </CardContent>
     </Card>
   );
