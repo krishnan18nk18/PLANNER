@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -141,7 +142,7 @@ export default function WeeklyPlannerPage() {
                         return (
                         <div key={habitIndex} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Icon className="h-5 w-5 text-primary" />
+                                {Icon && <Icon className="h-5 w-5 text-primary" />}
                                 <span>{habit.name}</span>
                             </div>
                             <div className="flex gap-2">
