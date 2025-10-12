@@ -7,6 +7,7 @@ import {
   CheckSquare,
   Sparkles,
   Calendar,
+  BookMarked,
 } from 'lucide-react';
 
 import {
@@ -22,6 +23,7 @@ import { Icons } from '../icons';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/tasks', icon: CheckSquare, label: 'Tasks' },
+  { href: '/planners', icon: BookMarked, label: 'Planners' },
   { href: '/suggestions', icon: Sparkles, label: 'Smart Suggestions' },
   { href: '/calendar', icon: Calendar, label: 'Calendar' },
 ];
