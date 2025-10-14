@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Icons } from '@/components/icons';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
@@ -64,6 +65,52 @@ export default function LoginPage() {
     }
   };
 
+  const handleTestUserSignIn = async () => {
+    const auth = getAuth();
+    const testEmail = 'test@example.com';
+    const testPassword = 'password123';
+
+    try {
+      // First, try to sign in
+      await signInWithEmailAndPassword(auth, testEmail, testPassword);
+      toast({ title: 'Signed in as Test User!' });
+      router.push('/dashboard');
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        // If user doesn't exist, create it
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, testEmail, testPassword);
+          const user = userCredential.user;
+          if (user && db) {
+            const userRef = doc(db, 'users', user.uid);
+            await setDoc(userRef, {
+              uid: user.uid,
+              email: user.email,
+              displayName: 'Test User',
+              photoURL: '',
+              createdAt: new Date().toISOString(),
+            });
+          }
+          toast({ title: 'Test User account created and signed in!' });
+          router.push('/dashboard');
+        } catch (creationError: any) {
+          toast({
+            variant: 'destructive',
+            title: 'Test User Creation Failed',
+            description: creationError.message,
+          });
+        }
+      } else {
+        // Handle other sign-in errors
+        toast({
+          variant: 'destructive',
+          title: 'Test User Sign-In Failed',
+          description: error.message,
+        });
+      }
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md glass-card">
@@ -86,6 +133,9 @@ export default function LoginPage() {
             </div>
             <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white">Sign In</Button>
           </form>
+          <Button variant="secondary" onClick={handleTestUserSignIn} className="w-full mt-2">
+            Sign in as Test User
+          </Button>
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
