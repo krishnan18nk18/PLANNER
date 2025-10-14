@@ -91,7 +91,11 @@
   }
 
   .light .glass-card {
-    @apply bg-white shadow-lg;
+    @apply bg-white shadow-lg text-card-foreground;
+  }
+  
+  .light .priority-column-header {
+    @apply text-slate-800;
   }
 
   .gradient-border {

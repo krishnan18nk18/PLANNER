@@ -26,7 +26,7 @@ const TaskCard = ({ task }: { task: Task }) => (
 const PriorityColumn = ({ title, tasks, gradient }: { title: string, tasks: Task[], gradient: string }) => (
     <Card className={cn("glass-card text-card-foreground border-border/20", gradient)}>
         <CardHeader>
-            <CardTitle className="font-headline text-lg text-white">{title}</CardTitle>
+            <CardTitle className="font-headline text-lg text-white priority-column-header">{title}</CardTitle>
         </CardHeader>
         <CardContent>
             {tasks.map(task => <TaskCard key={task.id} task={task} />)}
