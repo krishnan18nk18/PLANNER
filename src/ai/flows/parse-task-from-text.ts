@@ -1,4 +1,4 @@
-'use server';
+'use client';
 /**
  * @fileOverview An AI agent for parsing a task from a raw text string.
  *

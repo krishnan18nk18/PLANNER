@@ -1,11 +1,10 @@
+
+'use client';
+
 import type { Metadata } from 'next';
 import { SuggestionTool } from '@/components/ai/suggestion-tool';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles } from 'lucide-react';
-
-export const metadata: Metadata = {
-  title: 'Smart Suggestions',
-};
 
 export default function SuggestionsPage() {
   return (
