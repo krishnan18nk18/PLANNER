@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +8,6 @@ import {
   CheckSquare,
   Sparkles,
   Calendar,
-  BookMarked,
   Sun,
   Moon,
 } from 'lucide-react';
@@ -28,7 +28,6 @@ import { Button } from '../ui/button';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/tasks', icon: CheckSquare, label: 'Tasks' },
-  { href: '/planners', icon: BookMarked, label: 'Planners' },
   { href: '/suggestions', icon: Sparkles, label: 'Smart Suggestions' },
   { href: '/calendar', icon: Calendar, label: 'Calendar' },
 ];

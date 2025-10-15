@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,7 +22,6 @@ import {
   useSortable,
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
@@ -147,7 +147,7 @@ function PlannerCard({ planner, onToggle, dragAttributes, dragListeners }: { pla
     )
 }
 
-export default function PlannersPage() {
+export function PlannersGrid() {
   const { user } = useUser();
   const { db } = useFirestore();
   const { data: plannerConfig, loading } = useDoc<PlannerConfig>(user ? `users/${user.uid}/planners/config` : null);
@@ -242,7 +242,7 @@ export default function PlannersPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">Planners</h1>
+        <h2 className="text-2xl font-bold tracking-tight font-headline">Your Planners</h2>
         <p className="text-muted-foreground">
           Choose a planner to get started with organizing your life. Drag and drop to rearrange.
         </p>

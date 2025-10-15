@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -46,6 +47,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { TaskForm } from '@/components/tasks/task-form';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { PlannersGrid } from '@/components/dashboard/planners-grid';
 
 const componentMap = {
   FloatingNotes,
@@ -53,6 +55,7 @@ const componentMap = {
   PriorityTaskColumns,
   DailySchedule,
   LiveActivities,
+  PlannersGrid,
 };
 
 type ComponentKey = keyof typeof componentMap;
@@ -60,6 +63,7 @@ type ComponentKey = keyof typeof componentMap;
 const initialComponentOrder: ComponentKey[] = [
   'FloatingNotes',
   'TaskAnalytics',
+  'PlannersGrid',
   'PriorityTaskColumns',
   'DailySchedule',
   'LiveActivities',
@@ -71,6 +75,7 @@ const dashboardComponents: Record<ComponentKey, {title: string, component: React
     PriorityTaskColumns: { title: 'Priority Tasks', component: PriorityTaskColumns },
     DailySchedule: { title: 'Daily Schedule', component: DailySchedule },
     LiveActivities: { title: 'Live Activities', component: LiveActivities },
+    PlannersGrid: { title: 'Planners', component: PlannersGrid },
 };
 
 
@@ -116,7 +121,7 @@ export default function DashboardPage() {
     useEffect(() => {
         // This could be migrated to Firestore user settings
         try {
-            const savedOrder = localStorage.getItem('dashboardLayout');
+            const savedOrder = localStorage.getItem('dashboardLayout_v2');
             if (savedOrder) {
                 const parsedOrder = JSON.parse(savedOrder) as ComponentKey[];
                 const validOrder = parsedOrder.filter(id => initialComponentOrder.includes(id));
@@ -171,6 +176,7 @@ export default function DashboardPage() {
     },
     DailySchedule: { tasks: dailyTasks },
     LiveActivities: { tasks: tasks || [] },
+    PlannersGrid: {},
   };
 
   const sensors = useSensors(
@@ -195,7 +201,7 @@ export default function DashboardPage() {
         const newOrder = arrayMove(items, oldIndex, newIndex);
 
         try {
-            localStorage.setItem('dashboardLayout', JSON.stringify(newOrder));
+            localStorage.setItem('dashboardLayout_v2', JSON.stringify(newOrder));
             toast({ title: 'Dashboard layout saved!' });
         } catch (e) {
             toast({ variant: 'destructive', title: 'Could not save layout' });
@@ -209,7 +215,7 @@ export default function DashboardPage() {
   const resetLayout = () => {
     setComponentOrder(initialComponentOrder);
     try {
-        localStorage.removeItem('dashboardLayout');
+        localStorage.removeItem('dashboardLayout_v2');
         toast({ title: 'Dashboard layout reset!' });
     } catch (e) {
         toast({ variant: 'destructive', title: 'Could not reset layout' });
