@@ -24,6 +24,7 @@ import {
 } from '@dnd-kit/sortable';
 import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { CSS } from '@dnd-kit/utilities';
 
 import {
   ArrowRight,
