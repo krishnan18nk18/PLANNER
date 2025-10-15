@@ -1,0 +1,8 @@
+{
+	"appId": "com.yourcompany.planverse",
+	"appName": "PlanVerse",
+	"webDir": "out",
+	"server": {
+		"androidScheme": "https"
+	}
+}
