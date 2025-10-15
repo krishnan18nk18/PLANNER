@@ -1,8 +1,8 @@
+
 'use client';
 
-import { useActionState, useEffect } from 'react';
-import { useFormStatus } from 'react-dom';
-import { getSuggestions } from '@/app/actions';
+import { useState, useEffect } from 'react';
+import { suggestOptimalTaskTimes, type SuggestOptimalTaskTimesInput, type SuggestOptimalTaskTimesOutput } from '@/ai/flows/suggest-optimal-task-times';
 import {
   Card,
   CardContent,
@@ -19,44 +19,55 @@ import { Loader2, Lightbulb } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
-const initialState = {
-  message: '',
-};
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full bg-accent hover:bg-accent/90">
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      Get Suggestions
-    </Button>
-  );
-}
-
 export function SuggestionTool() {
-  const [state, formAction] = useActionState(getSuggestions, initialState);
   const { toast } = useToast();
+  const [task, setTask] = useState('');
+  const [availability, setAvailability] = useState('');
+  const [preferences, setPreferences] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<SuggestOptimalTaskTimesOutput | null>(null);
 
-  useEffect(() => {
-    if (state?.message && state.message !== 'Success' && !state.errors) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!task || !availability || !preferences) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Information',
+        description: 'Please fill out all fields to get suggestions.',
+      });
+      return;
+    }
+
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const input: SuggestOptimalTaskTimesInput = { task, availability, preferences };
+      const suggestionResult = await suggestOptimalTaskTimes(input);
+      setResult(suggestionResult);
+    } catch (error) {
+      console.error('Error getting suggestions:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: state.message,
+        description: 'An error occurred while getting suggestions. Please try again.',
       });
+    } finally {
+      setLoading(false);
     }
-  }, [state, toast]);
+  };
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="task">Task</Label>
         <Input
           id="task"
           name="task"
           placeholder="e.g., 'Schedule a 1-hour workout session'"
+          value={task}
+          onChange={(e) => setTask(e.target.value)}
         />
-        {state?.errors?.task && <p className="text-sm text-destructive">{state.errors.task[0]}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="availability">Your Availability</Label>
@@ -64,8 +75,9 @@ export function SuggestionTool() {
           id="availability"
           name="availability"
           placeholder="e.g., 'Free tomorrow from 2 PM to 5 PM. Busy on Wednesday morning.'"
+          value={availability}
+          onChange={(e) => setAvailability(e.target.value)}
         />
-        {state?.errors?.availability && <p className="text-sm text-destructive">{state.errors.availability[0]}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="preferences">Preferences</Label>
@@ -73,25 +85,29 @@ export function SuggestionTool() {
           id="preferences"
           name="preferences"
           placeholder="e.g., 'I prefer to work out in the afternoon. Avoid scheduling during lunch hours (12 PM - 1 PM).'"
+          value={preferences}
+          onChange={(e) => setPreferences(e.target.value)}
         />
-        {state?.errors?.preferences && <p className="text-sm text-destructive">{state.errors.preferences[0]}</p>}
       </div>
 
-      <SubmitButton />
+      <Button type="submit" disabled={loading} className="w-full bg-accent hover:bg-accent/90">
+        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+        Get Suggestions
+      </Button>
 
-      {state?.data && (
+      {result && (
         <Alert className="mt-6">
           <Lightbulb className="h-4 w-4" />
           <AlertTitle>AI Suggestions</AlertTitle>
           <AlertDescription>
             <p className="font-semibold mt-2">Suggested Times:</p>
             <ul className="list-disc pl-5 mt-1 space-y-1">
-              {state.data.suggestedTimes.map((time, index) => (
+              {result.suggestedTimes.map((time, index) => (
                 <li key={index}>{time}</li>
               ))}
             </ul>
             <p className="font-semibold mt-4">Reasoning:</p>
-            <p className="mt-1">{state.data.reasoning}</p>
+            <p className="mt-1">{result.reasoning}</p>
           </AlertDescription>
         </Alert>
       )}

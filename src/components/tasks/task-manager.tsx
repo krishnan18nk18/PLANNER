@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -28,7 +29,7 @@ import { TaskForm } from './task-form';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '../ui/badge';
 import { formatDate } from '@/lib/utils';
-import { createTaskFromVoice } from '@/app/actions';
+import { parseTaskFromText } from '@/ai/flows/parse-task-from-text';
 import { useToast } from '@/hooks/use-toast';
 
 const getIconForTask = (title: string) => {
@@ -78,15 +79,25 @@ export function TaskManager({ initialTasks, setTasks }: { initialTasks: Task[]; 
         setIsListening(false);
         setIsProcessing(true);
         toast({ title: 'Processing...', description: 'Understanding your command.' });
+        
+        try {
+          const parsedTask = await parseTaskFromText(transcript);
+          const dueDate = new Date(parsedTask.dueDate);
+          dueDate.setHours(12, 0, 0, 0);
 
-        const result = await createTaskFromVoice(transcript);
+          const newTask: Task = {
+            ...parsedTask,
+            id: Date.now().toString(),
+            completed: false,
+            dueDate: dueDate.toISOString(),
+          };
 
-        setIsProcessing(false);
-        if (result.error || !result.task) {
-          toast({ variant: 'destructive', title: 'Error', description: result.error || 'Could not create task.' });
-        } else {
-          setTasks(prevTasks => [...prevTasks, result.task!].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
-          toast({ variant: 'default', title: 'Task Added', description: `Added "${result.task.title}" to your journey.` });
+          setTasks(prevTasks => [...prevTasks, newTask].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
+          toast({ variant: 'default', title: 'Task Added', description: `Added "${newTask.title}" to your journey.` });
+        } catch (error) {
+           toast({ variant: 'destructive', title: 'Error', description: 'Could not understand the task. Please try again.' });
+        } finally {
+            setIsProcessing(false);
         }
       };
       recognitionRef.current.onerror = (event: any) => {
@@ -94,19 +105,19 @@ export function TaskManager({ initialTasks, setTasks }: { initialTasks: Task[]; 
         setIsProcessing(false);
         toast({ variant: 'destructive', title: 'Voice Error', description: event.error });
       };
-    } else {
-        // Speech recognition not supported
     }
   }, [toast, setTasks]);
 
 
   const handleVoiceButtonClick = () => {
+    if (!recognitionRef.current) {
+      toast({ variant: 'destructive', title: 'Not Supported', description: 'Speech recognition is not supported in your browser.' });
+      return;
+    }
     if (isListening) {
-      recognitionRef.current?.stop();
-    } else if (recognitionRef.current) {
-      recognitionRef.current.start();
+      recognitionRef.current.stop();
     } else {
-        toast({ variant: 'destructive', title: 'Not Supported', description: 'Speech recognition is not supported in your browser.' });
+      recognitionRef.current.start();
     }
   };
 
@@ -280,5 +291,3 @@ export function TaskManager({ initialTasks, setTasks }: { initialTasks: Task[]; 
     </>
   );
 }
-
-    
