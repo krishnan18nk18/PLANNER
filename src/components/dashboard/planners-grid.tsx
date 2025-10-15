@@ -87,7 +87,7 @@ function SortablePlannerCard({ planner, onToggle }: { planner: PlannerType; onTo
   } = useSortable({ id: planner.id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform ? CSS.Transform.toString(transform) : undefined,
     transition,
     zIndex: isDragging ? 10 : 'auto',
     opacity: isDragging ? 0.5 : 1,
@@ -255,7 +255,7 @@ export function PlannersGrid() {
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={planners.map(p => p.id)} strategy={rectSortingStrategy}>
-          <div className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-3">
             {planners.map((planner) => (
               <SortablePlannerCard key={planner.id} planner={planner} onToggle={handleTogglePlanner} />
             ))}
