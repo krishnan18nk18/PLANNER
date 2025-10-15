@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { suggestOptimalTaskTimes, type SuggestOptimalTaskTimesInput, type SuggestOptimalTaskTimesOutput } from '@/ai/flows/suggest-optimal-task-times';
+import { useState } from 'react';
+import type { SuggestOptimalTaskTimesInput, SuggestOptimalTaskTimesOutput } from '@/ai/flows/suggest-optimal-task-times';
 import {
   Card,
   CardContent,
@@ -43,7 +43,17 @@ export function SuggestionTool() {
 
     try {
       const input: SuggestOptimalTaskTimesInput = { task, availability, preferences };
-      const suggestionResult = await suggestOptimalTaskTimes(input);
+      const response = await fetch('/api/suggest-times', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const suggestionResult = await response.json();
       setResult(suggestionResult);
     } catch (error) {
       console.error('Error getting suggestions:', error);

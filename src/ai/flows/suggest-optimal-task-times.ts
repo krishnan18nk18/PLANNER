@@ -1,4 +1,3 @@
-'use client';
 /**
  * @fileOverview An AI agent for suggesting optimal times for tasks based on user preferences and availability.
  *

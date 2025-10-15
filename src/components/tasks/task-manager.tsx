@@ -29,7 +29,6 @@ import { TaskForm } from './task-form';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '../ui/badge';
 import { formatDate } from '@/lib/utils';
-import { parseTaskFromText } from '@/ai/flows/parse-task-from-text';
 import { useToast } from '@/hooks/use-toast';
 
 const getIconForTask = (title: string) => {
@@ -81,16 +80,26 @@ export function TaskManager({ initialTasks, setTasks }: { initialTasks: Task[]; 
         toast({ title: 'Processing...', description: 'Understanding your command.' });
         
         try {
-          const parsedTask = await parseTaskFromText(transcript);
-          const dueDate = new Date(parsedTask.dueDate);
-          dueDate.setHours(12, 0, 0, 0);
+            const response = await fetch('/api/parse-task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command: transcript }),
+            });
 
-          const newTask: Task = {
-            ...parsedTask,
-            id: Date.now().toString(),
-            completed: false,
-            dueDate: dueDate.toISOString(),
-          };
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const parsedTask = await response.json();
+            const dueDate = new Date(parsedTask.dueDate);
+            dueDate.setHours(12, 0, 0, 0);
+
+            const newTask: Task = {
+                ...parsedTask,
+                id: Date.now().toString(),
+                completed: false,
+                dueDate: dueDate.toISOString(),
+            };
 
           setTasks(prevTasks => [...prevTasks, newTask].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()));
           toast({ variant: 'default', title: 'Task Added', description: `Added "${newTask.title}" to your journey.` });
